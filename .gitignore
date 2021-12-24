@@ -1,0 +1,23 @@
+# macOS
+.DS_Store?
+
+# MATLAB
+*.m~
+*.asv
+*.mex*
+
+# LaTeX
+*.aux
+*.bbl
+*.out
+*.blg
+*.log
+*.thm
+*.fdb_latexmk
+*.fls
+*.vrb
+*.brf
+*.toc
+*.synctex
+*.synctex.gz
+*-converted-to.*
