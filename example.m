@@ -1,35 +1,38 @@
 n = 20;
-[x, y, z] = cubedsphere(n, 2);
-
-idx = 1:length(x);
-x = x(idx);
-y = y(idx);
-z = z(idx);
-
-dom = struct();
-K = length(x);
-for k = 1:K
-    dom(k).x = x{k};
-    dom(k).y = y{k};
-    dom(k).z = z{k};
-end
+dom = surfacemesh.sphere(n, 2);
 
 l = 7; m = 3;
 sol = spherefun.sphharm(l, m);
-rhs = @(x,y,z) -l*(l+1)*sol(x,y,z);
-S = SurfaceSEM(dom, rhs);
-build(S)
-xyz = S.patches{1}.xyz;
-bc = sol(xyz(:,1), xyz(:,2), xyz(:,3));
-u = S.solve(bc);
+sol = surfacefun(@(x,y,z) sol(x,y,z), dom);
+rhs = -l*(l+1)*sol;
 
-for k = 1:K
-    %surf(x{k}, y{k}, z{k}, u{k})
-    %surf(x{k}, y{k}, z{k}, sol(x{k}, y{k}, z{k}))
-    surf(x{k}, y{k}, z{k}, u{k} - sol(x{k}, y{k}, z{k}))
-    hold on
-end
-%shading interp
+pdo = struct();
+pdo.lap = 1;
+S = surfaceop(dom, pdo, rhs);
+build(S)
+u = solve(S);
+
+clf
+plot(u - sol)
+hold on
+wireframe(dom)
+axis equal
+colorbar
+shg
+
+%% New RHS
+l = 4; m = 2;
+sol = spherefun.sphharm(l, m);
+sol = surfacefun(@(x,y,z) sol(x,y,z), dom);
+rhs = -l*(l+1)*sol;
+
+S.rhs = rhs;
+u = solve(S);
+
+clf
+plot(u - sol)
+hold on
+wireframe(dom)
 axis equal
 colorbar
 shg
@@ -83,7 +86,6 @@ shading interp
 axis equal
 colorbar
 shg
-
 
 normalize = @(v) v ./ sqrt(v(:,1).^2 + v(:,2).^2 + v(:,3).^2);
 nl = -normalize([xu(:,1)   yu(:,1)   zu(:,1)]);
