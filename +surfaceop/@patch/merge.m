@@ -1,4 +1,4 @@
-function c = merge(a, b)
+function c = merge(a, b, toplevel)
 %MERGELR   Merge two patch objects.
 %   C = MERGE(A, B) returns a patch C formed by merging the two patches A
 %   and B. Typically A and B will be adjacent and any common edges will be
@@ -12,6 +12,8 @@ if ( nargin == 0 )
 elseif ( nargin == 1 )
     c = a;
     return
+elseif ( nargin == 2 )
+    toplevel = false;
 end
 
 % Compute the indices of intersecting points in a and b.
@@ -25,13 +27,13 @@ A = -( D2Na(s1,s1) + D2Nb(s2,s2) );
 z = [ D2Na(s1,i1), D2Nb(s2,i2), D2Na(s1,end) + D2Nb(s2,end) ];
 %                              |----------- rhs -----------|
 
-% Fix rank deficiency with Leslie's ones matrix trick
-if ( rank(A) < size(A,1) )
+% Fix rank deficiency with Leslie's ones matrix trick:
+if ( toplevel )
     A = A + ones(size(A));
 end
 
-% Store the decomposition for reuse in updateRHS().
-dA = decomposition(A, 'lu');
+% Store the decomposition for reuse in updateRHS():
+dA = decomposition(A);
 S = dA \ z;
 
 % Compute new D2N maps:

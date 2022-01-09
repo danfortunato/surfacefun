@@ -124,8 +124,13 @@ for k = 1:numPatches
 
     % Construct solution operator:
     %Ainv = @(u) A(ii,ii) \ u;
-    dA = decomposition(A(ii,ii), 'lu');
+    dA = decomposition(A(ii,ii));
     Ainv = @(u) dA \ u;
+    %A1 = inv(A(ii,ii));
+    %Ainv = @(u) A1 * u;
+    %[U1, S1, V1] = svd(A(ii,ii));
+    %U1 = U1'./diag(S1);
+    %Ainv = @(u) V1*(U1*u);
     S = Ainv([-A(ii,ee), rhs_eval]);
 
     % Replace solution operator for corners with interp conditions:

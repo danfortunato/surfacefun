@@ -28,6 +28,10 @@ classdef surfaceop < handle
                 return
             end
 
+            if ( nargin < 3 )
+                rhs = 0;
+            end
+
             obj.op = parsePDO(op);
  
             % Assign the domain:

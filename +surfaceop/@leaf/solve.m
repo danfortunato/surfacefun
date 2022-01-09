@@ -1,13 +1,10 @@
-function [u, d] = solve(P, bc)
+function u = solve(P, bc)
 %SOLVE   Solve a leaf patch.
-%   [U, D] = SOLVE(P, BC) returns instead a cell array containing the
-%   solution coefficients U and a vector D containing the domain of the
-%   patch.
+%   U = SOLVE(P, BC) returns a cell array containing the solution values U.
 
 % Extract the domain from the patch:
-d = P.domain;
 id = P.id;
-n = size(d.x{id}, 1);
+n = size(P.domain.x{id}, 1);
 
 if ( ~isnumeric(bc) )
     % Evaluate the RHS if given a function handle:
