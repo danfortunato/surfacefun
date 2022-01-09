@@ -27,17 +27,9 @@ end
 I = zeros(length(f), 1);
 for k = 1:length(f)
     [nv, nu] = size(f.vals{k});
-    qu = nu;
-    qv = nv;
-    nv = min(nv, qv);
-    nu = min(nu, qu);
-    coeffs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.vals{k}).').';
-    U = zeros(qv, qu);
-    U(1:nv,1:nu) = coeffs(1:nv,1:nu);
-    V = chebtech2.coeffs2vals( chebtech2.coeffs2vals(U).' ).';
-    wu = chebtech2.quadwts(qu); wu = wu(:);
-    wv = chebtech2.quadwts(qv); wv = wv(:);
-    I(k) = sum(sum(V .* wv .* wu.' .* sqrt(f.domain.J{k})));
+    wu = chebtech2.quadwts(nu); wu = wu(:);
+    wv = chebtech2.quadwts(nv); wv = wv(:);
+    I(k) = sum(sum(f.vals{k} .* wv .* wu.' .* sqrt(f.domain.J{k})));
 end
 
 % Combine norms on each element.

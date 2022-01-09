@@ -22,7 +22,7 @@ classdef surfacefun
 
         function obj = surfacefun(varargin)
 
-            func = @(x,y) 0*x;
+            func = @(x,y,z) 0*x;
             vals = {};
 
             isValidDom = @(dom) isa(dom, 'surfacemesh');

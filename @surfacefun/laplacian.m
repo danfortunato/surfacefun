@@ -4,6 +4,6 @@ function L = laplacian(f)
 %
 %   See also LAP.
 
-L = diff(f, 2, 2) + diff(f, 2, 1);
+L = diff(f, 2, 1) + diff(f, 2, 2) + diff(f, 2, 3);
 
 end
