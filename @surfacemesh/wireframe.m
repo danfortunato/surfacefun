@@ -6,6 +6,7 @@ holdState = ishold();
 x = dom.x;
 y = dom.y;
 z = dom.z;
+vn = dom.facenormals;
 
 n = size(x{1}, 1);
 ne = length(x);
@@ -24,8 +25,11 @@ if ( ~holdState )
     % more clearly.
     hold on
     for k = 1:length(dom)
-        scl = 0.99;
-        surf(scl*dom.x{k}, scl*dom.y{k}, scl*dom.z{k}, 1+0*dom.x{k}, 'FaceColor', 'w', 'EdgeColor', 'None');
+        scl = 0.01;
+        surface(x{k} - scl*vn{k}(:,:,1), ...
+                y{k} - scl*vn{k}(:,:,2), ...
+                z{k} - scl*vn{k}(:,:,3), ...
+                0*x{k}, 'FaceColor', 'w', 'EdgeColor', 'None');
     end
     axis equal
 end

@@ -8,7 +8,7 @@ classdef surfacemesh
         z
 
     end
-    
+
     properties ( Hidden )
 
         xu
@@ -34,15 +34,15 @@ classdef surfacemesh
         edgenormals
 
     end
-    
+
     methods
 
         function dom = surfacemesh(x, y, z)
-            
+
             if ( nargin == 0 )
                 return
             end
-            
+
             if ( ~(iscell(x) && iscell(y) && iscell(z) && ...
                    all(size(x) == size(y)) && all(size(y) == size(z))) )
                 error('X, Y, and Z must be cell arrays of the same size.');
@@ -88,10 +88,17 @@ classdef surfacemesh
             dom.F = F;
             dom.G = G;
             dom.J = J;
-            
-            dom.facenormals = normal(dom);
+
+            dom.facenormals = computeNormals(dom);
             %dom.edgenormals = normal(dom, 'edges');
 
+        end
+
+        function n = numArgumentsFromSubscript(varargin)
+        %NUMARGUMENTSFROMSUBSCRIPT   Number of arguments for customized indexing methods.
+        %   Overloading NUMEL() gives the wrong NARGOUT for SUBSREF().
+        %   Defining this function fixes it.
+            n = 1;
         end
 
     end
@@ -99,6 +106,8 @@ classdef surfacemesh
     methods ( Static )
 
         dom = sphere(varargin);
+        dom = blob(varargin);
+        dom = torus(varargin);
 
     end
 
