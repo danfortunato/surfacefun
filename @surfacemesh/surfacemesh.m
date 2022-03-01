@@ -33,6 +33,7 @@ classdef surfacemesh
 
         facenormals
         edgenormals
+        connectivity
 
     end
 
@@ -102,6 +103,7 @@ classdef surfacemesh
             dom.J = J;
             dom.singular = singular;
 
+            dom.connectivity = buildConnectivity(dom);
             dom.facenormals = computeNormals(dom);
             %dom.edgenormals = normal(dom, 'edges');
 
