@@ -121,6 +121,14 @@ classdef surfacemesh
         dom = sphere(varargin);
         dom = blob(varargin);
         dom = torus(varargin);
+        dom = cyclide(varargin);
+        dom = stellarator(varargin);
+        dom = cube(varargin);
+        dom = flat_sphere(varargin);
+        dom = teardrop(varargin);
+        dom = mobius(varargin);
+        dom = fromGmsh(varargin);
+        dom = fromRhino(varargin);
 
     end
 

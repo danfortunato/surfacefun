@@ -15,7 +15,7 @@ switch lower(type)
     case 'quasiuniform'
         project = @projectQuasiUniform;
     otherwise
-        error('SURFACEMESH:SPHERE:projection', 'Unknown projection type.');
+        error('SURFACEMESH:BLOB:projection', 'Unknown projection type.');
 end
 
 v = [-1 1 -1 1];

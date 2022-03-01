@@ -1,12 +1,12 @@
-function dom = sphere(n, nref, type)
-%SPHERE   Create a cubed sphere mesh.
+function dom = teardrop(n, nref, type)
+%TEARDROP   Create a teardrop mesh.
 
 if ( nargin < 2 )
     nref = 0;
 end
 
 if ( nargin < 3 )
-    type = 'quasiuniform';
+    type = 'naive';
 end
 
 switch lower(type)
@@ -15,7 +15,7 @@ switch lower(type)
     case 'quasiuniform'
         project = @projectQuasiUniform;
     otherwise
-        error('SURFACEMESH:SPHERE:projection', 'Unknown projection type.');
+        error('SURFACEMESH:TEARDROP:projection', 'Unknown projection type.');
 end
 
 v = [-1 1 -1 1];
@@ -23,12 +23,12 @@ for l = 1:nref
     nv = size(v, 1);
     vnew = zeros(4*nv, 4);
     for k = 1:nv
-        vk = v(k,:); 
+        vk = v(k,:);
         mid = [mean(vk(1:2)) mean(vk(3:4))];
         vnew((k-1)*4+(1:4),:) = [ vk(1)  mid(1) vk(3)  mid(2) ;
                                   mid(1) vk(2)  vk(3)  mid(2) ;
-                                  vk(1)  mid(1) mid(2) vk(4)  ;
-                                  mid(1) vk(2)  mid(2) vk(4)  ];
+                                  mid(1) vk(2)  mid(2) vk(4)  ;
+                                  vk(1)  mid(1) mid(2) vk(4)  ];
     end
     v = vnew;
 end
@@ -44,10 +44,11 @@ for k = 1:nv
     vv(:,:,k) = scly*yy0 + v(k,3);
 end
 
-xx = cat(3, -1+0*uu, 1+0*uu, vv, vv, uu, uu);
-yy = cat(3, uu, uu, -1+0*uu, 1+0*uu, vv, vv);
-zz = cat(3, vv, vv, uu, uu, -1+0*uu, 1+0*uu);
+xx = cat(3, -1+0*uu, 1+0*uu, vv,      uu,     uu,      vv);
+yy = cat(3, uu,      vv,     -1+0*uu, 1+0*uu, vv,      uu);
+zz = cat(3, vv,      uu,     uu,      vv,     -1+0*uu, 1+0*uu);
 [xx, yy, zz] = project(xx, yy, zz);
+[xx, yy, zz] = project_teardrop(xx, yy, zz);
 
 x = cell(6*nv, 1);
 y = cell(6*nv, 1);
@@ -59,6 +60,16 @@ for k = 1:6*nv
 end
 
 dom = surfacemesh(x, y, z);
+
+end
+
+function [xp, yp, zp] = project_teardrop(x, y, z)
+
+m = 1;
+th = cart2pol(x, y);
+t = acos(z);
+rnew = sin(t).*sin(t/2).^m;
+[xp, yp, zp] = pol2cart(th, rnew, z);
 
 end
 
