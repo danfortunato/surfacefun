@@ -20,7 +20,7 @@ classdef leaf < surfaceop.patch
 
     methods
 
-        function P = leaf(dom, id, S, D2N, edges, xyz, Ainv, normal_d)
+        function P = leaf(dom, id, S, D2N, D2N_scl, u_part, du_part, edges, xyz, Ainv, normal_d)
 
             % Construct empty patch:
             if ( nargin == 0 )
@@ -33,10 +33,14 @@ classdef leaf < surfaceop.patch
             P.id = id;                 % Index of patch in domain.
             P.S = S;                   % Solution operator.
             P.D2N = D2N;               % Dirichlet-to-Neumann map.
+            P.D2N_scl = D2N_scl;
+            P.u_part = u_part;
+            P.du_part = du_part;
             P.edges = edges;           % Edges.
             P.xyz = xyz;               % Boundary nodes.
             P.Ainv = Ainv;             % Local solution operator.
             P.normal_d = normal_d;     % Normal derivative operator.
+            P.len = 1;
 
         end
 

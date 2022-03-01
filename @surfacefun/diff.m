@@ -94,6 +94,16 @@ function f = mappedDiff(f, dom, k, dim)
 
     % Compute df/dx = (du/dx) df/du + (dv/dx) df/dv
     vals = du .* dfdu + dv .* dfdv;
+    if ( dom.singular(k) )
+        % Computing derivatives will be incorrect on these patches, since
+        % we do not divide by the Jacobian. We could perhaps do something
+        % like:
+        %
+        %    idx = abs(dom.J{k}) > 1e-4;
+        %    vals(idx(:)) = vals(idx) ./ dom.J{k}(idx);
+        %
+        % But for now, we live with the incorrect answer on these patches.
+    end
 
     %Dx = ux(:).*Du + vx(:).*Dv;
     %Dy = uy(:).*Du + vy(:).*Dv;

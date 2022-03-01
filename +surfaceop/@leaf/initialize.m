@@ -80,8 +80,8 @@ for k = 1:numPatches
     x = dom.x{k};
     y = dom.y{k};
     z = dom.z{k};
-    edges = [ x(n,1) y(n,1) z(n,1) x(1,1) y(1,1) z(1,1) n ;  % "Left" side
-              x(n,n) y(n,n) z(n,n) x(1,n) y(1,n) z(1,n) n ;  % "Right" side
+    edges = [ x(1,1) y(1,1) z(1,1) x(n,1) y(n,1) z(n,1) n ;  % "Left" side
+              x(1,n) y(1,n) z(1,n) x(n,n) y(n,n) z(n,n) n ;  % "Right" side
               x(1,1) y(1,1) z(1,1) x(1,n) y(1,n) z(1,n) n ;  % "Down" side
               x(n,1) y(n,1) z(n,1) x(n,n) y(n,n) z(n,n) n ]; % "Up" side
 
@@ -96,10 +96,30 @@ for k = 1:numPatches
         rhs_eval = rhs;
     end
 
+    %[Dx, Dy, Dz] = diffs(x, y, z);
     Dx = dom.ux{k}(:).*Du + dom.vx{k}(:).*Dv;
     Dy = dom.uy{k}(:).*Du + dom.vy{k}(:).*Dv;
     Dz = dom.uz{k}(:).*Du + dom.vz{k}(:).*Dv;
-    %[Dx, Dy, Dz] = diffs(x, y, z);
+    Dxx = Dx^2;
+    Dyy = Dy^2;
+    Dzz = Dz^2;
+    Dxy = Dx*Dy;
+    Dyz = Dy*Dz;
+    Dxz = Dx*Dz;
+    if ( dom.singular(k) )
+        J = dom.J{k}(:);
+        Jx = Dx*J; Jy = Dy*J; Jz = Dz*J;
+        Dxx = J.*Dxx - Jx.*Dx;
+        Dyy = J.*Dyy - Jy.*Dy;
+        Dzz = J.*Dzz - Jz.*Dz;
+        Dxy = J.*Dxy - Jx.*Dy;
+        Dyz = J.*Dyz - Jy.*Dz;
+        Dxz = J.*Dxz - Jz.*Dx;
+        Dx = J.^2.*Dx;
+        Dy = J.^2.*Dy;
+        Dz = J.^2.*Dz;
+        II = J.^3.*II;
+    end
 
     for name = fieldnames(op).'
         name = name{1};
@@ -111,33 +131,41 @@ for k = 1:numPatches
     end
 
     A = zeros(n^2);
-    if ( op.dxx ~= 0 ), A = A + op.dxx(:).*Dx^2; end
-    if ( op.dyy ~= 0 ), A = A + op.dyy(:).*Dy^2; end
-    if ( op.dzz ~= 0 ), A = A + op.dzz(:).*Dz^2; end
-    if ( op.dxy ~= 0 ), A = A + op.dxy(:).*Dx*Dy; end
-    if ( op.dyz ~= 0 ), A = A + op.dyz(:).*Dy*Dz; end
-    if ( op.dxz ~= 0 ), A = A + op.dxz(:).*Dx*Dz; end
-    if ( op.dx  ~= 0 ), A = A + op.dx(:).*Dx; end
-    if ( op.dy  ~= 0 ), A = A + op.dy(:).*Dy; end
-    if ( op.dz  ~= 0 ), A = A + op.dz(:).*Dz; end
-    if ( op.b   ~= 0 ), A = A + op.b(:).*II; end
+    if ( op.dxx ~= 0 ), A = A + op.dxx(:).*Dxx; end
+    if ( op.dyy ~= 0 ), A = A + op.dyy(:).*Dyy; end
+    if ( op.dzz ~= 0 ), A = A + op.dzz(:).*Dzz; end
+    if ( op.dxy ~= 0 ), A = A + op.dxy(:).*Dxy; end
+    if ( op.dyz ~= 0 ), A = A + op.dyz(:).*Dyz; end
+    if ( op.dxz ~= 0 ), A = A + op.dxz(:).*Dxz; end
+    if ( op.dx  ~= 0 ), A = A + op.dx(:).*Dx;   end
+    if ( op.dy  ~= 0 ), A = A + op.dy(:).*Dy;   end
+    if ( op.dz  ~= 0 ), A = A + op.dz(:).*Dz;   end
+    if ( op.b   ~= 0 ), A = A + op.b(:).*II;    end
 
     % Construct solution operator:
     %Ainv = @(u) A(ii,ii) \ u;
-    dA = decomposition(A(ii,ii));
-    Ainv = @(u) dA \ u;
-    %A1 = inv(A(ii,ii));
-    %Ainv = @(u) A1 * u;
-    %[U1, S1, V1] = svd(A(ii,ii));
-    %U1 = U1'./diag(S1);
-    %Ainv = @(u) V1*(U1*u);
-    S = Ainv([-A(ii,ee), rhs_eval]);
+    if ( dom.singular(k) )
+        dA = decomposition(A(ii,ii), 'cod');
+        %dA = decomposition(A(ii,ii));
+        Ainv = @(u) dA \ (dom.J{k}(ii).^3 .* u);
+        %S = Ainv([-A(ii,ee), rhs_eval]);
+        S = dA \ ([-A(ii,ee), dom.J{k}(ii).^3.*rhs_eval]);
+    else
+        dA = decomposition(A(ii,ii));
+        Ainv = @(u) dA \ u;
+        %A1 = inv(A(ii,ii));
+        %Ainv = @(u) A1 * u;
+        %[U1, S1, V1] = svd(A(ii,ii));
+        %U1 = U1'./diag(S1);
+        %Ainv = @(u) V1*(U1*u);
+        S = Ainv([-A(ii,ee), rhs_eval]);
+    end
 
     % Replace solution operator for corners with interp conditions:
     S([1:2,end-1:end],:) = 0;
     S(1:2,1:n-2) = B;
     S([end-1,end],end-n+2:end-1) = B;
-    
+
     % Append boundary points to solution operator:
     tmpS = zeros(n^2, size(S, 2));
     tmpS(ii,:) = S;
@@ -165,12 +193,32 @@ for k = 1:numPatches
     normal_d(downIdx,:)  = nd(:,1).*dx(downIdx,:)  + nd(:,2).*dy(downIdx,:)  + nd(:,3).*dz(downIdx,:);
     normal_d(upIdx,:)    = nu(:,1).*dx(upIdx,:)    + nu(:,2).*dy(upIdx,:)    + nu(:,3).*dz(upIdx,:);
 
+    % The D2N map needs to be scaled on each side (e.g. when being
+    % merged) to account for the Jacobian scaling which has been
+    % factored out of the coordinate derivative maps. This scaling
+    % is not known until the merge stage, as it depends on the
+    % scaling of the neighboring patch.
+    if ( dom.singular(k) )
+        D2N_scl = cell(4, 1);
+        J = dom.J{k}.^3; Jee = J(ee); Jss = Jee(ss);
+        D2N_scl{1} = Jss(leftIdx); % Left
+        D2N_scl{2} = Jss(rightIdx);  % Right
+        D2N_scl{3} = Jss(downIdx); % Down
+        D2N_scl{4} = Jss(upIdx);  % Up
+    else
+        D2N_scl = {ones(n-2,1), ones(n-2,1), ones(n-2,1), ones(n-2,1)}.';
+    end
+
+    % Extract the particular solution to store separately:
+    u_part = S(:,end); S = S(:,1:end-1);
+    du_part = D2N(:,end); D2N = D2N(:,1:end-1);
+
     % Assemble the patch:
     xee = x(ee);
     yee = y(ee);
     zee = z(ee);
     xyz = [xee(ss) yee(ss) zee(ss)];
-    L{k} = surfaceop.leaf(dom, k, S, D2N, edges, xyz, Ainv, normal_d);
+    L{k} = surfaceop.leaf(dom, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, Ainv, normal_d);
 
 end
 

@@ -4,6 +4,8 @@ function build(S)
 %   operators in S.patches in the order defined in the merge tree
 %   S.domain.mergeIdx. After building, S will have a single patch.
 %
+%   BUILD(S, TRUE) will project out the rank deficiency at the top level.
+%
 %   If S has not yet been initialized, then an error is thrown.
 %
 %   See also INITIALIZE, SOLVE.
@@ -33,21 +35,21 @@ end
 % Loop over each level:
 for j = 1:numel(S.mergeIdx) % <-- number of levels
 
-    idxj = S.mergeIdx{j};               % Indicies for jth level.
-    q = cell(size(idxj, 1),1);          % Initialize patches at jth level.
+    idxj = S.mergeIdx{j};                   % Indices for jth level.
+    q = cell(size(idxj, 1),1);              % Initialize patches at jth level.
 
     % Perform all the merges at this level:
     for k = 1:size(idxj, 1)
-        idxjk = idxj(k,:);              % Index for kth merge at jth level.
-        idxjk(isnan(idxjk)) = [];       % Remove NaNs.
-        pk = S.patches(idxjk);          % Extract patches.
-        pk(cellfun(@isempty, pk)) = []; % Remove empty patches.
+        idxjk = idxj(k,:);                  % Index for kth merge at jth level.
+        idxjk(isnan(idxjk)) = [];           % Remove NaNs.
+        pk = S.patches(idxjk);              % Extract patches.
+        pk(cellfun(@isempty, pk)) = [];     % Remove empty patches.
         if ( isempty(pk) )
-            q{k} = [];                  % Empty merge.
+            q{k} = [];                      % Empty merge.
         elseif ( j == numel(S.mergeIdx) )
-            q{k} = merge(pk{:}, true);  % Perform top-level merge.
+            q{k} = merge(pk{:}, S.rankdef); % Perform top-level merge.
         else
-            q{k} = merge(pk{:});        % Perform merge.
+            q{k} = merge(pk{:});            % Perform merge.
         end
     end
 

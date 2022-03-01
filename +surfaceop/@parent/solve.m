@@ -13,7 +13,11 @@ elseif ( isscalar(bc) )
 end
 
 % Evaluate the solution operator for the parent:
-u = P.S * [bc ; 1]; % The 1 accounts for the particular part.
+%u = P.S * [bc ; 1]; % The 1 accounts for the particular part.
+u = P.u_part;
+if ( ~isempty(bc) )
+    u = u + P.S * bc;
+end
 
 % Construct boundary conditions for children and recurse.
 
@@ -29,9 +33,9 @@ idx2 = cat(1, P.idx2{:}); % idx2 = cell2mat(P.idx2.');
 
 % Assemble boundary conditions for child patches:
 ubc1 = ones(size(P.child1.S, 2)-1, 1);
-ubc1(idx1) = [bc(i1) ; u];
+ubc1(idx1) = [bc(i1) ; P.flip1.'*u];
 ubc2 = ones(size(P.child2.S, 2)-1, 1);
-ubc2(idx2) = [bc(i2) ; u];
+ubc2(idx2) = [bc(i2) ; P.flip2.'*u];
 
 % Solve for the child patches:
 u1 = solve(P.child1, ubc1);

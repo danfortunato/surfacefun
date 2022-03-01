@@ -1,4 +1,4 @@
-function [i1, i2, i4a, i4b, dom, edgesAB] = intersect(a, b)
+function [i1, i2, i4a, i4b, flip1, flip2, scl1, scl2, sclAB, dom, edgesAB] = intersect(a, b)
 %INTERSECT   Compute the indices of the glue between two patches.
 %   [I1, I2, I4A, I4B, L2G1, L2G2, SCL1, SCL2, SCLAB] = INTERSECT(A, B)
 %   returns the indices of the glue w.r.t. A.edges and B.edges of two
@@ -8,6 +8,15 @@ function [i1, i2, i4a, i4b, dom, edgesAB] = intersect(a, b)
 %       I2 : Indices of DOFs on B.edges which are not on A.edges
 %       I4A: Indices of DOFs on A.edges which are in the intersection
 %       I4B: Indices of DOFs on B.edges which are in the intersection
+%
+%   If the boundaries being merged contain flipped regions (so that DOFs
+%   are ordered differently local to each patch) then FLIP1 and FLIP2
+%   encode how to map from local DOFs in A and B to global DOFs along
+%   the shared interface. The matrices SCL1 and SCL2 are scale vectors for
+%   the Jacobians that have been factored out of the Dirichlet-to-Neumann
+%   maps for patches A and B. SCLAB is a cell array of scalars and/or
+%   function handles defining those algebraic expressions for the parent's
+%   edges.
 %
 %   [I1, I2, I4A, I4B, DOM, EDGESAB] = INTERSECT(A, B) returns also the
 %   domain and the edges of the intersection.
@@ -34,8 +43,11 @@ end
 scl = max([sclx scly sclz]);
 
 % Check for intersecting edges (with a tolerance):
-tol = 1e-12 * scl;
+tol = 1e-8 * scl;
 % Must check in both directions:
+digits = ceil(abs(log10(tol)));
+%[~, iA1, iB1] = intersect(round(edgesA(:,[1 2 3 4 5 6]), digits), ...
+%                          round(edgesB(:,1:6), digits), 'rows');
 [iA1, iB1] = intersectTol(edgesA(:,[1 2 3 4 5 6]), edgesB(:,1:6), tol);
 [iA2, iB2] = intersectTol(edgesA(:,[4 5 6 1 2 3]), edgesB(:,1:6), tol);
 iA = [iA1 ; iA2];
@@ -56,9 +68,56 @@ for k = 1:numel(iB)
     i4b = [i4b ; ppB(iB(k)) + (1:pB(iB(k))).'];
 end
 
+flip1 = speye(length(i4a));
+flip2 = cell(numel(iB), 1);
+for k = 1:numel(iB1)
+    flip2{k} = speye(pB(iB1(k)));
+end
+for k = 1:numel(iB2)
+    flip2{numel(iB1)+k} = fliplr(speye(pB(iB2(k))));
+end
+if ( ~isempty(flip2) )
+    flip2 = matlab.internal.math.blkdiag(flip2{:});
+else
+    flip2 = flip1;
+end
+
 % i1 and i2 are remaining points (i.e., those not in the intersection).
 i1 = (1:sum(pA)).'; i1(i4a) = [];
 i2 = (1:sum(pB)).'; i2(i4b) = [];
+
+% TODO: Deal with flipping?
+%flip1 = ones(size(i4a)); flip1 = diag(flip1);
+%flip2 = ones(size(i4b)); flip2 = diag(flip2);
+% flip1 = ones(size(i4a));
+% flip2 = ones(sum(pB(iB1)),1);
+% for k = 1:numel(iB2)
+%     e = ones(pB(iB2(k)),1); e(2:2:end) = -1;
+%     flip2 = [flip2 ; e];
+% end
+% if ( isempty(flip1) )
+%     % Force 0x1 rather than empty. (Not sure why this is required.)
+%     flip1 = ones(0,1);
+%     flip2 = ones(0,1);
+% end
+
+%% Construct operators for p-adaptivity and Jacobian scaling.
+
+sclA = a.D2N_scl;
+sclB = b.D2N_scl;
+scl1 = cat(1, sclA{iA});
+scl2 = cat(1, sclB{iB});
+if ( isempty(scl1) )
+    scl1 = zeros(0,1);
+    scl2 = zeros(0,1);
+end
+
+% Concatenate the scaling functions for the parent's edges.
+if ( ~isempty(iA) )
+    sclA(iA) = [];
+    sclB(iB) = [];
+end
+sclAB = [sclA ; sclB];
 
 edgesA(iA,:) = [];
 edgesB(iB,:) = [];

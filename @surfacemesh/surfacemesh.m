@@ -29,6 +29,7 @@ classdef surfacemesh
         F
         G
         J
+        singular
 
         facenormals
         edgenormals
@@ -65,6 +66,7 @@ classdef surfacemesh
 
             n = size(x{1}, 1);
             D = diffmat(n);
+            singular = false(size(x));
             for k = 1:length(x)
                 xu{k} = x{k} * D.'; xv{k} = D * x{k};
                 yu{k} = y{k} * D.'; yv{k} = D * y{k};
@@ -73,12 +75,22 @@ classdef surfacemesh
                 G{k} = xv{k}.*xv{k} + yv{k}.*yv{k} + zv{k}.*zv{k};
                 F{k} = xu{k}.*xv{k} + yu{k}.*yv{k} + zu{k}.*zv{k};
                 J{k} = E{k}.*G{k} - F{k}.^2;
-                ux{k} = (G{k}.*xu{k}-F{k}.*xv{k})./J{k};
-                uy{k} = (G{k}.*yu{k}-F{k}.*yv{k})./J{k};
-                uz{k} = (G{k}.*zu{k}-F{k}.*zv{k})./J{k};
-                vx{k} = (E{k}.*xv{k}-F{k}.*xu{k})./J{k};
-                vy{k} = (E{k}.*yv{k}-F{k}.*yu{k})./J{k};
-                vz{k} = (E{k}.*zv{k}-F{k}.*zu{k})./J{k};
+                if ( any(abs(J{k}) < 1e-10, 'all') )
+                    singular(k) = true;
+                    ux{k} = G{k}.*xu{k}-F{k}.*xv{k};
+                    uy{k} = G{k}.*yu{k}-F{k}.*yv{k};
+                    uz{k} = G{k}.*zu{k}-F{k}.*zv{k};
+                    vx{k} = E{k}.*xv{k}-F{k}.*xu{k};
+                    vy{k} = E{k}.*yv{k}-F{k}.*yu{k};
+                    vz{k} = E{k}.*zv{k}-F{k}.*zu{k};
+                else
+                    ux{k} = (G{k}.*xu{k}-F{k}.*xv{k})./J{k};
+                    uy{k} = (G{k}.*yu{k}-F{k}.*yv{k})./J{k};
+                    uz{k} = (G{k}.*zu{k}-F{k}.*zv{k})./J{k};
+                    vx{k} = (E{k}.*xv{k}-F{k}.*xu{k})./J{k};
+                    vy{k} = (E{k}.*yv{k}-F{k}.*yu{k})./J{k};
+                    vz{k} = (E{k}.*zv{k}-F{k}.*zu{k})./J{k};
+                end
             end
 
             dom.xu = xu; dom.xv = xv; dom.ux = ux; dom.vx = vx;
@@ -88,6 +100,7 @@ classdef surfacemesh
             dom.F = F;
             dom.G = G;
             dom.J = J;
+            dom.singular = singular;
 
             dom.facenormals = computeNormals(dom);
             %dom.edgenormals = normal(dom, 'edges');

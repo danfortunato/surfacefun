@@ -37,6 +37,11 @@ end
 % Restrict to interior nodes.
 rhs = rhs(ii);
 
+% Scale by the Jacobian if the element is singular
+if ( dom.singular(id) )
+    rhs = dom.J{id}(ii).^3 .* rhs;
+end
+
 % Apply A^-1
 if ( isempty(P.Ainv) )
     error('SURFACEOP:LEAF:updateRHS:operatorNotStored', ...
@@ -52,9 +57,11 @@ tmpS = zeros(n^2, 1);
 tmpS(ii) = S;
 S = tmpS;
 
-P.S(:,end) = S;
+%P.S(:,end) = S;
+P.u_part = S;
 
 % Normal derivative:
-P.D2N(:,end) = P.normal_d * S;
+%P.D2N(:,end) = P.normal_d * S;
+P.du_part = P.normal_d * S;
 
 end

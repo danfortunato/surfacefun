@@ -11,6 +11,7 @@ classdef surfaceop < handle
         op            % Differential operator.
         patches = {}  % Cell array of surfaceop.Patches.
         mergeIdx = {} % Cell array of merge indices.
+        rankdef = false
 
     end
 
