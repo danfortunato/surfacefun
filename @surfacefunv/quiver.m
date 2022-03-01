@@ -1,4 +1,4 @@
-function varargout = quiver(f, scl, m)
+function varargout = quiver(f, scl, m, varargin)
 %QUIVER   Quiver plot of a SURFACEFUNV.
 %   QUIVER(F) plots the vector field of the SURFACEFUNV F on its surface.
 %
@@ -56,7 +56,7 @@ for k = 1:length(dom)
 end
 view(3)
 
-h = quiver3(xx, yy, zz, scl*fx, scl*fy, scl*fz, 0, 'Color', 'k');
+h = quiver3(xx, yy, zz, scl*fx, scl*fy, scl*fz, 0, varargin{:});
 
 if ( nargout > 0 )
     varargout = {h};
