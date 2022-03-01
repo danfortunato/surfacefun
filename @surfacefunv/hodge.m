@@ -20,6 +20,7 @@ n = normal(dom);
 
 % Curl-free component: Solve lap(u) = div(f)
 L = surfaceop(dom, pdo, div(f));
+L.rankdef = true;
 u = solve(L);
 
 % Divergence-free component: Solve lap(v) = -div(n x f)
