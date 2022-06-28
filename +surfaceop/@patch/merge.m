@@ -64,7 +64,7 @@ du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + M * u_part;
 % Construct the new patch:
 xyz = [a.xyz(i1,:) ; b.xyz(i2,:)];
 id = [a.id ; b.id];
-c = surfaceop.parent(dom, id, S, D2N, D2N_scl, u_part, du_part, dA, edges, xyz, a, b, ...
+c = surfaceop.parent(dom, id, S, D2N, D2N_scl, u_part, du_part, A, dA, edges, xyz, a, b, ...
     {i1, s1}, {i2, s2}, flip1, flip2, scl1, scl2);
 
 end

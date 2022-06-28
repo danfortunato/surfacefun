@@ -14,13 +14,14 @@ classdef parent < surfaceop.patch
         flip2
         scl1
         scl2
+        A           % Interface linear system
         dA          % Decomposition of interface linear system
 
     end
 
     methods
 
-        function P = parent(domain, id, S, D2N, D2N_scl, u_part, du_part, dA, edges, xyz, child1, child2, idx1, idx2, flip1, flip2, scl1, scl2)
+        function P = parent(domain, id, S, D2N, D2N_scl, u_part, du_part, A, dA, edges, xyz, child1, child2, idx1, idx2, flip1, flip2, scl1, scl2)
 
             % Construct empty patch:
             if ( nargin == 0 )
@@ -35,6 +36,7 @@ classdef parent < surfaceop.patch
             P.D2N_scl = D2N_scl;
             P.u_part = u_part;
             P.du_part = du_part;
+            P.A = A;
             P.dA = dA;
             P.edges = edges;
             P.xyz = xyz;
