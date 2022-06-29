@@ -124,9 +124,13 @@ for k = 1:length(f)
     U = zeros(qv, qu);
     U(1:nv,1:nu) = coeffs(1:nv,1:nu);
     V = chebtech2.coeffs2vals(chebtech2.coeffs2vals(U).').';
+    J_cfs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.domain.J{k}).').';
+    J_q = zeros(qv, qu);
+    J_q(1:nv,1:nu) = J_cfs(1:nv,1:nu);
+    J = chebtech2.coeffs2vals(chebtech2.coeffs2vals(J_q).').';
     wu = chebtech2.quadwts(qu); wu = wu(:);
     wv = chebtech2.quadwts(qv); wv = wv(:);
-    int(k) = sum(sum(abs(V).^p .* wv .* wu.' .* sqrt(f.domain.J{k}))).^(1/p);
+    int(k) = sum(sum(abs(V).^p .* wv .* wu.' .* sqrt(J))).^(1/p);
 end
 
 end
