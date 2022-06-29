@@ -14,13 +14,16 @@ switch index(1).type
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% FEVAL / COMPOSE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case '()'
 
-        % Where to evaluate:
-        x = idx{1}; 
-        y = idx{2}; 
-        z = idx{3};
-
-        out = feval(f, x, y, z);
-
+        if ( all(size(f) ~= 1) )
+            % Where to evaluate:
+            x = idx{1};
+            y = idx{2};
+            z = idx{3};
+            out = feval(f, x, y, z);
+        else
+            [varargout{1:nargout}] = builtin('subsref', f, index);
+            return
+        end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% GET %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case '.'
 
