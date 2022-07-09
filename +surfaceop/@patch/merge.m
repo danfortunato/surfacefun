@@ -46,10 +46,6 @@ u_part = dA \ z_part;
 
 % Compute new D2N maps:
 Z12 = zeros(numel(i1), numel(i2));
-%                                 |--- rhs ----|
-% D2N = [ D2Na(i1,i1),  Z12,         D2Na(i1,end) ;
-%         Z12.',        D2Nb(i2,i2), D2Nb(i2,end) ] ...
-%     + [ D2Na(i1,s1)*flip1.' ; D2Nb(i2,s2)*flip2.' ] * S;
 M = [ D2Na(i1,s1)*flip1.' ; D2Nb(i2,s2)*flip2.' ];
 D2N = [ D2Na(i1,i1) Z12 ; Z12.' D2Nb(i2,i2) ] + M * S;
 du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + M * u_part;
