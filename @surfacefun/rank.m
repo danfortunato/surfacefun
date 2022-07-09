@@ -6,7 +6,7 @@ function r = rank(f, tol)
 %   RANK(F, TOL) is the number of relative singular values of F greater
 %   than TOL.
 %
-% See also SVD, QR, ORTH.
+%   See also SVD, QR, ORTH.
 
 % Choose a tolerance if none is given:
 if ( nargin < 2 )

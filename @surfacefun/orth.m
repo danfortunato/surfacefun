@@ -6,7 +6,7 @@ function Q = orth(f, tol)
 %
 %   Q = ORTH(F, TOL) uses the tolerance TOL for orthonormalization.
 %
-% See also NULL, SVD, RANK, QR.
+%   See also NULL, SVD, RANK, QR.
 
 % Choose a tolerance if none is given:
 if ( nargin < 2 )
