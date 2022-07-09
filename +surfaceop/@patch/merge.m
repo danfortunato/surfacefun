@@ -29,14 +29,10 @@ D2Na = a.D2N; D2Nb = b.D2N;
 %   such that multiplying D2NA/B by SCL1/2 cancels out, so D2NA/B should
 %   only be multiplied by SCL2/1, respectively.
 A = -( scl2.*flip1*D2Na(s1,s1)*flip1.' + scl1.*flip2*D2Nb(s2,s2)*flip2.' );
-% z = [ scl2.*flip1*D2Na(s1,i1), ...
-%       scl1.*flip2*D2Nb(s2,i2), ...
-%       scl2.*flip1*D2Na(s1,end) + scl1.*flip2*D2Nb(s2,end) ];
-%   |----------------------- rhs -----------------------|
 z = [ scl2.*flip1*D2Na(s1,i1) scl1.*flip2*D2Nb(s2,i2) ];
 z_part = scl2.*flip1*a.du_part(s1,:) + scl1.*flip2*b.du_part(s2,:);
 
-% Check for a closed surface at the top level
+% Check for a closed surface at the top level:
 if ( rankdef && isempty(i1) && isempty(i2) )
     % Fix rank deficiency with Leslie's ones matrix trick:
     w = a.w(s1);
@@ -47,10 +43,6 @@ end
 dA = decomposition(A);
 S = dA \ z;
 u_part = dA \ z_part;
-
-if ( isIllConditioned(dA) )
-    keyboard
-end
 
 % Compute new D2N maps:
 Z12 = zeros(numel(i1), numel(i2));
