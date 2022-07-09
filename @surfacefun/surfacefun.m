@@ -41,6 +41,11 @@ classdef surfacefun
                 elseif ( iscell(varargin{1}) && length(varargin{1}) == length(dom) )
                     % Call is: SURFACEFUN(VALS, DOM)
                     vals = varargin{1};
+                elseif ( isscalar(varargin{1}) )
+                    vals = cell(length(dom), 1);
+                    for k = 1:length(dom)
+                        vals{k} = repmat(varargin{1}, size(dom.x{k}));
+                    end
                 else
                     error('SURFACEFUN:surfacefun:invalid', ...
                         'Invalid call to surfacefun constructor.');
