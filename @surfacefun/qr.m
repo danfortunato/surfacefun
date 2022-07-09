@@ -22,11 +22,14 @@ I = quadwts(dom);
 M = spdiags(I(:), 0, numel(dom), numel(dom));
 W = sqrt(M);       % In general, chol(M)
 [U, R] = qr(W*A, 0);
-s = sign(diag(R)); % }
-s(~s) = 1;         % } Enforce diag(R) >= 0
-S = diag(s);       % }
-QQ = (W \ U) * S;
-R = S * R;
+QQ = W \ U;
+
+%%% Uncomment to enforce diag(R) >= 0:
+% s = sign(diag(R));
+% s(~s) = 1;
+% S = diag(s);
+% QQ = (W \ U) * S;
+% R = S * R;
 
 % Convert to surfacefuns:
 Q = f;
