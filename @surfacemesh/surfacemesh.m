@@ -121,8 +121,11 @@ classdef surfacemesh
     methods ( Static )
 
         dom = sphere(varargin);
+        dom = ellipsoid(varargin);
+        dom = hemisphere(varargin);
         dom = blob(varargin);
         dom = torus(varargin);
+        dom = sharptorus(varargin);
         dom = cyclide(varargin);
         dom = stellarator(varargin);
         dom = cube(varargin);
