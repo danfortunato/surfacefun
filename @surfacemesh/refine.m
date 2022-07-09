@@ -44,6 +44,6 @@ for r = 1:nref
     z = znew;
 end
 
-dom = surfacemesh(xnew, ynew, znew);
+dom = surfacemesh(x, y, z);
 
 end
