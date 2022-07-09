@@ -21,7 +21,7 @@ classdef parent < surfaceop.patch
 
     methods
 
-        function P = parent(domain, id, S, D2N, D2N_scl, u_part, du_part, A, dA, edges, xyz, child1, child2, idx1, idx2, flip1, flip2, scl1, scl2)
+        function P = parent(domain, id, S, D2N, D2N_scl, u_part, du_part, A, dA, edges, xyz, w, child1, child2, idx1, idx2, flip1, flip2, scl1, scl2)
 
             % Construct empty patch:
             if ( nargin == 0 )
@@ -40,6 +40,7 @@ classdef parent < surfaceop.patch
             P.dA = dA;
             P.edges = edges;
             P.xyz = xyz;
+            P.w = w;
             P.len = child1.len + child2.len;
 
             % Assign children:

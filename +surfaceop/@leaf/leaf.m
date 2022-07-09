@@ -20,7 +20,7 @@ classdef leaf < surfaceop.patch
 
     methods
 
-        function P = leaf(dom, id, S, D2N, D2N_scl, u_part, du_part, edges, xyz, Ainv, normal_d)
+        function P = leaf(dom, id, S, D2N, D2N_scl, u_part, du_part, edges, xyz, w, Ainv, normal_d)
 
             % Construct empty patch:
             if ( nargin == 0 )
@@ -28,18 +28,19 @@ classdef leaf < surfaceop.patch
             end
 
             % Assign domain and operators:
-            P.n = size(dom.x{id}, 1);  % Discretization size.
-            P.domain = dom;            % Domain.
-            P.id = id;                 % Index of patch in domain.
-            P.S = S;                   % Solution operator.
-            P.D2N = D2N;               % Dirichlet-to-Neumann map.
-            P.D2N_scl = D2N_scl;
-            P.u_part = u_part;
-            P.du_part = du_part;
-            P.edges = edges;           % Edges.
-            P.xyz = xyz;               % Boundary nodes.
-            P.Ainv = Ainv;             % Local solution operator.
-            P.normal_d = normal_d;     % Normal derivative operator.
+            P.n = size(dom.x{id}, 1); % Discretization size.
+            P.domain = dom;           % Domain.
+            P.id = id;                % Index of patch in domain.
+            P.S = S;                  % Solution operator.
+            P.D2N = D2N;              % Dirichlet-to-Neumann map.
+            P.D2N_scl = D2N_scl;      % Scalings for Dirichlet-to-Neumann map.
+            P.u_part = u_part;        % Particular solution.
+            P.du_part = du_part;      % Normal derivative of particular solution.
+            P.edges = edges;          % Boundary edges.
+            P.xyz = xyz;              % Boundary nodes.
+            P.w = w;                  % Boundary quadrature weights.
+            P.Ainv = Ainv;            % Local solution operator.
+            P.normal_d = normal_d;    % Normal derivative operator.
             P.len = 1;
 
         end

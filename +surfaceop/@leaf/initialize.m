@@ -213,12 +213,17 @@ for k = 1:numPatches
     u_part = S(:,end); S = S(:,1:end-1);
     du_part = D2N(:,end); D2N = D2N(:,1:end-1);
 
+    w = chebtech2.quadwts(n); w = w(:);
+    ww = w .* w.' .* sqrt(dom.J{k});
+    ww = ww(ee);
+    ww = ww(ss);
+
     % Assemble the patch:
     xee = x(ee);
     yee = y(ee);
     zee = z(ee);
     xyz = [xee(ss) yee(ss) zee(ss)];
-    L{k} = surfaceop.leaf(dom, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, Ainv, normal_d);
+    L{k} = surfaceop.leaf(dom, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, ww, Ainv, normal_d);
 
 end
 

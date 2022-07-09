@@ -39,7 +39,8 @@ z_part = scl2.*flip1*a.du_part(s1,:) + scl1.*flip2*b.du_part(s2,:);
 % Check for a closed surface at the top level
 if ( rankdef && isempty(i1) && isempty(i2) )
     % Fix rank deficiency with Leslie's ones matrix trick:
-    A = A + ones(size(A));
+    w = a.w(s1);
+    A = A + w*w'; % or is it sqrt(w)*sqrt(w)' ?
 end
 
 % Store the decomposition for reuse in updateRHS():
@@ -63,8 +64,9 @@ du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + M * u_part;
 
 % Construct the new patch:
 xyz = [a.xyz(i1,:) ; b.xyz(i2,:)];
+w = [a.w(i1) ; b.w(i2)];
 id = [a.id ; b.id];
-c = surfaceop.parent(dom, id, S, D2N, D2N_scl, u_part, du_part, A, dA, edges, xyz, a, b, ...
-    {i1, s1}, {i2, s2}, flip1, flip2, scl1, scl2);
+c = surfaceop.parent(dom, id, S, D2N, D2N_scl, u_part, du_part, A, dA, ...
+    edges, xyz, w, a, b, {i1, s1}, {i2, s2}, flip1, flip2, scl1, scl2);
 
 end
