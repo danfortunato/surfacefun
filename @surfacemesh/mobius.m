@@ -23,8 +23,8 @@ for ku = 1:nu
     end
 end
 
-%dom = surfacemesh(x, y, z);
-dom = surfacemesh([x ; x], [y ; y], [z ; z]);
+dom = surfacemesh(x, y, z);
+%dom = surfacemesh([x ; x], [y ; y], [z ; z]);
 
 end
 
