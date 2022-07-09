@@ -1,7 +1,7 @@
 function f = times(f, g)
 %.*   Pointwise multiplication for SURFACEFUN.
-%   F.*G multiplies F and G, where F and G may be SURFACEFUN objects or
-%   scalars.
+%   F.*G multiplies F and G pointwise, where F and G may be SURFACEFUN
+%   objects or scalars.
 %
 %   See also MTIMES, COMPOSE.
 
@@ -12,10 +12,25 @@ if ( ~isa(f, 'surfacefun') )
 elseif ( isa(g, 'surfacefun' ) )
     % Multiply two SURFACEFUNs:
     % TODO: Check that F and G have the same domain.
-    f = compose(@times, f, g);
+    if ( ~all(size(f) == size(g)) )
+        error('SURFACEFUN:times:dims', 'Matrix dimension must agree.');
+    end
+    nfuns = prod(size(f)); %#ok<PSIZE>
+    for k = 1:nfuns
+        f(k) = compose(@times, f(k), g(k));
+    end
 elseif ( isnumeric(g) && isscalar(g) )
     % Multiply SURFACEFUN F by scalar G:
     f.vals = cellfun(@(vals) g*vals, f.vals, 'UniformOutput', false);
+elseif ( isnumeric(g) )
+    % Multiply SURFACEFUN F by matrix G:
+    if ( ~all(size(f) == size(g)) )
+        error('SURFACEFUN:times:dims', 'Matrix dimension must agree.');
+    end
+    nfuns = prod(size(f)); %#ok<PSIZE>
+    for k = 1:nfuns
+        f(k) = g(k)*f(k);
+    end
 else
     error('SURFACEFUN:times:invalid', ...
         'F and G must be scalars or surfacefun objects.')
