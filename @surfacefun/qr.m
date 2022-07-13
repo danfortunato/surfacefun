@@ -19,10 +19,9 @@ for k = 1:size(f, 2)
 end
 
 I = quadwts(dom);
-M = spdiags(I(:), 0, numel(dom), numel(dom));
-W = sqrt(M);       % In general, chol(M)
-[U, R] = qr(W*A, 0);
-QQ = W \ U;
+W = sqrt(I(:));
+[U, R] = qr(W.*A, 0);
+QQ = W .\ U;
 
 %%% Uncomment to enforce diag(R) >= 0:
 % s = sign(diag(R));
@@ -37,8 +36,11 @@ nelem = length(dom);
 [nv, nu] = size(dom.x{1});
 for k = 1:size(f, 2)
     vals = reshape(QQ(:,k), nv, nu, nelem);
-    vals = squeeze(mat2cell(vals, nv, nu, ones(nelem, 1)));
-    Q(:,k) = surfacefun(vals, dom);
+    valsC = cell(nelem, 1);
+    for j = 1:nelem
+        valsC{j} = vals(:,:,j);
+    end
+    Q(:,k) = surfacefun(valsC, dom);
 end
 
 end
