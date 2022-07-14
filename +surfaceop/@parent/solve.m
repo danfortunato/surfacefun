@@ -7,13 +7,13 @@ function u = solve(P, bc)
 if ( ~isnumeric(bc) )
     % Evaluate the RHS if given a function handle:
     bc = feval(bc, P.xyz(:,1), P.xyz(:,2), P.xyz(:,3));
+    bc = repmat(bc, 1, size(P.u_part));
 elseif ( isscalar(bc) )
     % Convert a scalar to a constant vector:
-    bc = repmat(bc, size(P.xyz, 1), 1);
+    bc = repmat(bc, size(P.xyz, 1), size(P.u_part, 2));
 end
 
 % Evaluate the solution operator for the parent:
-%u = P.S * [bc ; 1]; % The 1 accounts for the particular part.
 u = P.u_part;
 if ( ~isempty(bc) )
     u = u + P.S * bc;
@@ -32,10 +32,10 @@ idx1 = cat(1, P.idx1{:}); % idx1 = cell2mat(P.idx1.');
 idx2 = cat(1, P.idx2{:}); % idx2 = cell2mat(P.idx2.');
 
 % Assemble boundary conditions for child patches:
-ubc1 = ones(size(P.child1.S, 2)-1, 1);
-ubc1(idx1) = [bc(i1) ; P.flip1.'*u];
-ubc2 = ones(size(P.child2.S, 2)-1, 1);
-ubc2(idx2) = [bc(i2) ; P.flip2.'*u];
+ubc1 = ones(size(P.child1.S, 2)-1, size(P.u_part, 2));
+ubc1(idx1,:) = [bc(i1,:) ; P.flip1.'*u];
+ubc2 = ones(size(P.child2.S, 2)-1, size(P.u_part, 2));
+ubc2(idx2,:) = [bc(i2,:) ; P.flip2.'*u];
 
 % Solve for the child patches:
 u1 = solve(P.child1, ubc1);

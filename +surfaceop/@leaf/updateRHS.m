@@ -21,7 +21,8 @@ ii(2:n-1,2:n-1) = true;
 ii([1,end],[1,end]) = true;
 
 if ( iscell(rhs) )
-    rhs = rhs{1};
+    nrhs = size(rhs, 2);
+    rhs = reshape([rhs{1,:}], n^2, nrhs);
 end
 
 % Define scalar RHSs:
@@ -29,13 +30,13 @@ if ( isnumeric(rhs) && isscalar(rhs) )
     % Constant RHS.
     rhs = repmat(rhs, n^2, 1);
 elseif ( isnumeric(rhs) && ~isscalar(rhs) )
-    % We already have the coefficients of the RHS.
+    % We already have the values of the RHS.
 elseif ( isa(rhs, 'function_handle') )
     rhs = feval(rhs, dom.x{id}, dom.y{id}, dom.z{id});
 end
 
 % Restrict to interior nodes.
-rhs = rhs(ii);
+rhs = rhs(ii,:);
 
 % Scale by the Jacobian if the element is singular
 if ( dom.singular(id) )
@@ -53,15 +54,12 @@ S = P.Ainv(rhs);
 S([1:2,end-1:end],:) = 0;
 
 % Append boundary points to solution operator:
-tmpS = zeros(n^2, 1);
-tmpS(ii) = S;
+tmpS = zeros(n^2, nrhs);
+tmpS(ii,:) = S;
 S = tmpS;
-
-%P.S(:,end) = S;
 P.u_part = S;
 
 % Normal derivative:
-%P.D2N(:,end) = P.normal_d * S;
 P.du_part = P.normal_d * S;
 
 end

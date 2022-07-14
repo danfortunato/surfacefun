@@ -15,11 +15,13 @@ elseif ( isscalar(bc) )
 end
 
 % Evaluate the solution operator for the patch:
-%u = P.S * [bc ; 1]; % The 1 accounts for the particular part.
 u = P.S * bc + P.u_part;
-u = reshape(u, n, n);
 
 % Return cell output for consistency with PARENT/SOLVE():
-u = {u};
+U = cell(1, size(u, 2));
+for k = 1:size(u, 2)
+    U{k} = reshape(u(:,k), n, n);
+end
+u = U;
 
 end

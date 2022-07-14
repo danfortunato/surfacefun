@@ -41,6 +41,14 @@ classdef surfacefun
                 elseif ( iscell(varargin{1}) && length(varargin{1}) == length(dom) )
                     % Call is: SURFACEFUN(VALS, DOM)
                     vals = varargin{1};
+                    if ( size(vals, 2) > 1 )
+                        % Return an array of surfacefuns:
+                        obj = [];
+                        for k = 1:size(vals, 2)
+                            obj = [obj surfacefun(vals(:,k), dom)]; %#ok<AGROW>
+                        end
+                        return
+                    end
                 elseif ( isscalar(varargin{1}) )
                     vals = cell(length(dom), 1);
                     for k = 1:length(dom)

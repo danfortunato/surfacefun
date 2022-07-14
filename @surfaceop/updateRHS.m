@@ -11,7 +11,15 @@ assert(isInitialized(S), 'The surfaceop has not been initialized.')
 
 % Extract values if f is a surfacefun:
 if ( isa(f, 'surfacefun') )
-    f = f.vals;
+    if ( size(f, 2) == 1 )
+        f = f.vals;
+    else
+        vals = cell(length(f.domain), size(f, 2));
+        for k = 1:size(f, 2)
+            vals(:,k) = f(:,k).vals;
+        end
+        f = vals;
+    end
 end
 
 % Duplicate f if it is a scalar or function handle:
@@ -24,7 +32,7 @@ if ( isBuilt(S) )
     S.patches{1} = updateRHS(S.patches{1}, f);
 else
     for k = 1:numel(S.patches)
-        S.patches{k} = updateRHS(S.patches{k}, f{k});
+        S.patches{k} = updateRHS(S.patches{k}, f(k,:));
     end
 end
 
