@@ -1,4 +1,4 @@
-function f = diffy(f)
+function f = diffy(f, n)
 %DIFFY   Differentiate a SURFACEFUN with respect to y.
 %   DIFFY(F) returns a SURFACEFUN representing the derivative of the
 %   SURFACEFUN F in the y-direction.
