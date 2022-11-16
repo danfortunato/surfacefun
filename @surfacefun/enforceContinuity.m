@@ -4,6 +4,6 @@ function u = enforceContinuity(u)
 pdo = [];
 pdo.b = 1;
 Id = surfaceop(u.domain, pdo, u);
-u = Id.solve();
+u = Id.solve(0);
 
 end
