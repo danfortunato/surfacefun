@@ -1,4 +1,4 @@
-classdef surfacemesh
+classdef surfacemesh < handle
 %SURFACEMESH
 
     properties
@@ -76,7 +76,9 @@ classdef surfacemesh
                 G{k} = xv{k}.*xv{k} + yv{k}.*yv{k} + zv{k}.*zv{k};
                 F{k} = xu{k}.*xv{k} + yu{k}.*yv{k} + zu{k}.*zv{k};
                 J{k} = E{k}.*G{k} - F{k}.^2;
-                if ( any(abs(J{k}) < 1e-10, 'all') )
+
+                scl = max(abs(G{k}.*xu{k}-F{k}.*xv{k}), [], 'all');
+                if ( any(abs(J{k}) < 1e-10*scl, 'all') )
                     singular(k) = true;
                     ux{k} = G{k}.*xu{k}-F{k}.*xv{k};
                     uy{k} = G{k}.*yu{k}-F{k}.*yv{k};
