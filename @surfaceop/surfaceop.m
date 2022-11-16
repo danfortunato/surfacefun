@@ -21,7 +21,7 @@ classdef surfaceop < handle
 
     methods
 
-        function obj = surfaceop(dom, op, rhs)
+        function obj = surfaceop(dom, op, rhs, mergeIdx)
         %SURACEFOP   Constructor for the SURFACEOP class.
 
             if ( nargin == 0 )
@@ -39,7 +39,10 @@ classdef surfaceop < handle
             obj.domain = dom;
 
             % Build merge indices:
-            obj.mergeIdx = surfaceop.defaultIdx(dom);
+            if ( nargin < 4 )
+                mergeIdx = surfaceop.defaultIdx(dom);
+            end
+            obj.mergeIdx = mergeIdx;
 
             % Initialize patches:
             obj.initialize(rhs);
