@@ -30,16 +30,35 @@ n = size(dom.x{1}, 1);
 
 [X, Y] = chebpts2(n);             % Chebyshev points and grid.
 ii = abs(X) < 1 & abs(Y) < 1;     % Interior indices.
-ii([1,end],[1,end]) = true;       % Treat corners as interior.
 ee = ~ii;                         % Boundary indices.
-leftIdx  = 1:n-2;
-rightIdx = n-1:2*(n-2);
-downIdx  = 2*(n-2)+1:3*(n-2);
-upIdx    = 3*(n-2)+1:4*(n-2);
-numBdyPts = sum(ee(:)); 
+numBdyPts = sum(ee(:));
 numIntPts = sum(ii(:));
-ibc = 3*(n-2)+1;
-ss = [1:n-2, ibc:4*(n-2), n-1:2:ibc-1, n:2:ibc-1];
+
+% Skeleton mappings
+nskel = n-2;
+numSkelPts = 4*nskel;
+S2L = skel2leaf(n, nskel);
+L2S = leaf2skel(nskel, n);
+S2L = sparse(S2L);
+L2S = sparse(L2S);
+xskel = chebpts(nskel, 1);
+[xleaf, ~, wleaf] = chebpts(n, 2);
+B = barymat(xskel, xleaf, wleaf);
+w = chebtech1.quadwts(nskel); w = w(:);
+wskel = [w ; w ; w ; w];
+
+% Skeleton indices for each side
+leftSkel  = 1:nskel;
+rightSkel = nskel+1:2*nskel;
+downSkel  = 2*nskel+1:3*nskel;
+upSkel    = 3*nskel+1:4*nskel;
+
+% Compute binormal vectors on the skeleton
+[NL, NR, ND, NU] = binormals(dom);
+NL = pagemtimes(B, NL);
+NR = pagemtimes(B, NR);
+ND = pagemtimes(B, ND);
+NU = pagemtimes(B, NU);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%% DEFINE OPERATORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -49,13 +68,7 @@ I = eye(n);
 II = kron(I, I);
 Du = kron(D, I);
 Dv = kron(I, D);
-
-% Interpolation operator for corner values:
-Xii = X(1,2:(n-1)).';
-B = [Xii-1, -1-Xii].'; B(:,1:2:end) = -B(:,1:2:end);
-if ( mod(n-1, 2) )
-    B(2,:) = -B(2,:);
-end
+opfields = fieldnames(op).';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% CONSTANT RHS? %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,10 +93,10 @@ for k = 1:numPatches
     x = dom.x{k};
     y = dom.y{k};
     z = dom.z{k};
-    edges = [ x(1,1) y(1,1) z(1,1) x(n,1) y(n,1) z(n,1) n ;  % "Left" side
-              x(1,n) y(1,n) z(1,n) x(n,n) y(n,n) z(n,n) n ;  % "Right" side
-              x(1,1) y(1,1) z(1,1) x(1,n) y(1,n) z(1,n) n ;  % "Down" side
-              x(n,1) y(n,1) z(n,1) x(n,n) y(n,n) z(n,n) n ]; % "Up" side
+    edges = [ x(1,1) y(1,1) z(1,1) x(n,1) y(n,1) z(n,1) nskel ;  % "Left" side
+              x(1,n) y(1,n) z(1,n) x(n,n) y(n,n) z(n,n) nskel ;  % "Right" side
+              x(1,1) y(1,1) z(1,1) x(1,n) y(1,n) z(1,n) nskel ;  % "Down" side
+              x(n,1) y(n,1) z(n,1) x(n,n) y(n,n) z(n,n) nskel ]; % "Up" side
 
     % Evaluate non-constant RHSs if required:
     if ( isa(rhs, 'function_handle') )
@@ -96,7 +109,6 @@ for k = 1:numPatches
         rhs_eval = rhs;
     end
 
-    %[Dx, Dy, Dz] = diffs(x, y, z);
     Dx = dom.ux{k}(:).*Du + dom.vx{k}(:).*Dv;
     Dy = dom.uy{k}(:).*Du + dom.vy{k}(:).*Dv;
     Dz = dom.uz{k}(:).*Du + dom.vz{k}(:).*Dv;
@@ -121,29 +133,29 @@ for k = 1:numPatches
         II = J.^3.*II;
     end
 
-    for name = fieldnames(op).'
+    opk = op;
+    for name = opfields
         name = name{1};
-        if ( isa(op.(name), 'function_handle') )
-            op.(name) = feval(op.(name), x, y, z);
-        elseif ( isa(op.(name), 'surfacefun') )
-            op.(name) = op.(name).vals{k};
+        if ( isa(opk.(name), 'function_handle') )
+            opk.(name) = feval(opk.(name), x, y, z);
+        elseif ( isa(opk.(name), 'surfacefun') )
+            opk.(name) = opk.(name).vals{k};
         end
     end
 
     A = zeros(n^2);
-    if ( op.dxx ~= 0 ), A = A + op.dxx(:).*Dxx; end
-    if ( op.dyy ~= 0 ), A = A + op.dyy(:).*Dyy; end
-    if ( op.dzz ~= 0 ), A = A + op.dzz(:).*Dzz; end
-    if ( op.dxy ~= 0 ), A = A + op.dxy(:).*Dxy; end
-    if ( op.dyz ~= 0 ), A = A + op.dyz(:).*Dyz; end
-    if ( op.dxz ~= 0 ), A = A + op.dxz(:).*Dxz; end
-    if ( op.dx  ~= 0 ), A = A + op.dx(:).*Dx;   end
-    if ( op.dy  ~= 0 ), A = A + op.dy(:).*Dy;   end
-    if ( op.dz  ~= 0 ), A = A + op.dz(:).*Dz;   end
-    if ( op.b   ~= 0 ), A = A + op.b(:).*II;    end
+    if ( opk.dxx ~= 0 ), A = A + opk.dxx(:).*Dxx; end
+    if ( opk.dyy ~= 0 ), A = A + opk.dyy(:).*Dyy; end
+    if ( opk.dzz ~= 0 ), A = A + opk.dzz(:).*Dzz; end
+    if ( opk.dxy ~= 0 ), A = A + opk.dxy(:).*Dxy; end
+    if ( opk.dyz ~= 0 ), A = A + opk.dyz(:).*Dyz; end
+    if ( opk.dxz ~= 0 ), A = A + opk.dxz(:).*Dxz; end
+    if ( opk.dx  ~= 0 ), A = A + opk.dx(:).*Dx;   end
+    if ( opk.dy  ~= 0 ), A = A + opk.dy(:).*Dy;   end
+    if ( opk.dz  ~= 0 ), A = A + opk.dz(:).*Dz;   end
+    if ( opk.b   ~= 0 ), A = A + opk.b(:).*II;    end
 
     % Construct solution operator:
-    %Ainv = @(u) A(ii,ii) \ u;
     if ( dom.singular(k) )
         dA = decomposition(A(ii,ii), 'cod');
         %dA = decomposition(A(ii,ii));
@@ -151,47 +163,33 @@ for k = 1:numPatches
         %S = Ainv([-A(ii,ee), rhs_eval]);
         S = dA \ ([-A(ii,ee), dom.J{k}(ii).^3.*rhs_eval]);
     else
-        dA = decomposition(A(ii,ii));
-        Ainv = @(u) dA \ u;
-        %A1 = inv(A(ii,ii));
-        %Ainv = @(u) A1 * u;
-        %[U1, S1, V1] = svd(A(ii,ii));
-        %U1 = U1'./diag(S1);
-        %Ainv = @(u) V1*(U1*u);
+        dA = matlab.internal.decomposition.DenseLU(A(ii,ii));
+        Ainv = @(u) solve(dA, u, false);
         S = Ainv([-A(ii,ee), rhs_eval]);
     end
 
-    % Replace solution operator for corners with interp conditions:
-    S([1:2,end-1:end],:) = 0;
-    S(1:2,1:n-2) = B;
-    S([end-1,end],end-n+2:end-1) = B;
-
     % Append boundary points to solution operator:
-    tmpS = zeros(n^2, size(S, 2));
+    tmpS = zeros(n^2, numBdyPts+1);
     tmpS(ii,:) = S;
     tmpS(ee,:) = eye(numBdyPts, numBdyPts+1);
-    S = tmpS;
-    S = S(:,[ss end]);
+    S = [tmpS(:,1:end-1) * S2L, tmpS(:,end)];
+
+    % Construct normal derivative operator:
+    nl = NL(:,:,k);
+    nr = NR(:,:,k);
+    nd = ND(:,:,k);
+    nu = NU(:,:,k);
+    dx = L2S * Dx(ee,:);
+    dy = L2S * Dy(ee,:);
+    dz = L2S * Dz(ee,:);
+    normal_d = zeros(numSkelPts, n^2);
+    normal_d(leftSkel,:)  = nl(:,1).*dx(leftSkel,:)  + nl(:,2).*dy(leftSkel,:)  + nl(:,3).*dz(leftSkel,:);
+    normal_d(rightSkel,:) = nr(:,1).*dx(rightSkel,:) + nr(:,2).*dy(rightSkel,:) + nr(:,3).*dz(rightSkel,:);
+    normal_d(downSkel,:)  = nd(:,1).*dx(downSkel,:)  + nd(:,2).*dy(downSkel,:)  + nd(:,3).*dz(downSkel,:);
+    normal_d(upSkel,:)    = nu(:,1).*dx(upSkel,:)    + nu(:,2).*dy(upSkel,:)    + nu(:,3).*dz(upSkel,:);
 
     % Construct the D2N map:
-    dx = Dx(ee,:) * S; dx = dx(ss,:);
-    dy = Dy(ee,:) * S; dy = dy(ss,:);
-    dz = Dz(ee,:) * S; dz = dz(ss,:);
-    [nl, nr, nd, nu] = normals(x, y, z);
-    D2N = zeros(numBdyPts, numBdyPts+1);
-    D2N(leftIdx,:)  = nl(:,1).*dx(leftIdx,:)  + nl(:,2).*dy(leftIdx,:)  + nl(:,3).*dz(leftIdx,:);
-    D2N(rightIdx,:) = nr(:,1).*dx(rightIdx,:) + nr(:,2).*dy(rightIdx,:) + nr(:,3).*dz(rightIdx,:);
-    D2N(downIdx,:)  = nd(:,1).*dx(downIdx,:)  + nd(:,2).*dy(downIdx,:)  + nd(:,3).*dz(downIdx,:);
-    D2N(upIdx,:)    = nu(:,1).*dx(upIdx,:)    + nu(:,2).*dy(upIdx,:)    + nu(:,3).*dz(upIdx,:);
-
-    dx = Dx(ee,:); dx = dx(ss,:);
-    dy = Dy(ee,:); dy = dy(ss,:);
-    dz = Dz(ee,:); dz = dz(ss,:);
-    normal_d = zeros(numBdyPts, n^2);
-    normal_d(leftIdx,:)  = nl(:,1).*dx(leftIdx,:)  + nl(:,2).*dy(leftIdx,:)  + nl(:,3).*dz(leftIdx,:);
-    normal_d(rightIdx,:) = nr(:,1).*dx(rightIdx,:) + nr(:,2).*dy(rightIdx,:) + nr(:,3).*dz(rightIdx,:);
-    normal_d(downIdx,:)  = nd(:,1).*dx(downIdx,:)  + nd(:,2).*dy(downIdx,:)  + nd(:,3).*dz(downIdx,:);
-    normal_d(upIdx,:)    = nu(:,1).*dx(upIdx,:)    + nu(:,2).*dy(upIdx,:)    + nu(:,3).*dz(upIdx,:);
+    D2N = normal_d * S;
 
     % The D2N map needs to be scaled on each side (e.g. when being
     % merged) to account for the Jacobian scaling which has been
@@ -200,29 +198,28 @@ for k = 1:numPatches
     % scaling of the neighboring patch.
     if ( dom.singular(k) )
         D2N_scl = cell(4, 1);
-        J = dom.J{k}.^3; Jee = J(ee); Jss = Jee(ss);
-        D2N_scl{1} = Jss(leftIdx); % Left
-        D2N_scl{2} = Jss(rightIdx);  % Right
-        D2N_scl{3} = Jss(downIdx); % Down
-        D2N_scl{4} = Jss(upIdx);  % Up
+        J = dom.J{k}.^3;
+        Jss = L2S * J(ee);
+        D2N_scl{1} = Jss(leftSkel);  % Left
+        D2N_scl{2} = Jss(rightSkel); % Right
+        D2N_scl{3} = Jss(downSkel);  % Down
+        D2N_scl{4} = Jss(upSkel);    % Up
     else
-        D2N_scl = {ones(n-2,1), ones(n-2,1), ones(n-2,1), ones(n-2,1)}.';
+        D2N_scl = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
     end
 
     % Extract the particular solution to store separately:
     u_part = S(:,end); S = S(:,1:end-1);
     du_part = D2N(:,end); D2N = D2N(:,1:end-1);
-
-    w = chebtech2.quadwts(n); w = w(:);
-    ww = w .* w.' .* sqrt(dom.J{k});
-    ww = ww(ee);
-    ww = ww(ss);
+    
+    JJ = L2S * sqrt(dom.J{k}(ee));
+    ww = wskel .* JJ;
 
     % Assemble the patch:
     xee = x(ee);
     yee = y(ee);
     zee = z(ee);
-    xyz = [xee(ss) yee(ss) zee(ss)];
+    xyz = L2S * [xee yee zee];
     L{k} = surfaceop.leaf(dom, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, ww, Ainv, normal_d);
 
 end
@@ -232,80 +229,102 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% DEFINE OPERATORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [Dx, Dy, Dz] = diffs(x, y, z)
-%DIFFS   Differential operators on surfaces.
-%   [DX, DY, DZ] = DIFFS(X, Y, Z) returns the tangential derivative
-%   operators DX, DY, and DZ over the surface defined by the coordinates
-%   (X, Y, Z). The coordinates must be given as N x N matrices sampled at
-%   tensor-product Chebyshev nodes. DX, DY, and DZ are operators of size
-%   N^2 x N^2.
+function [nl, nr, nd, nu] = binormals(dom)
+%BINORMALS   Compute the binormal vectors for a surfacemesh.
 
-persistent D
-n = size(x, 1);
-if ( size(D, 1) ~= n )
-    D = diffmat(n);
-end
+n = size(dom.x{1}, 1);
 
-xu = x * D.'; xv = D * x;
-yu = y * D.'; yv = D * y;
-zu = z * D.'; zv = D * z;
-E = xu.*xu + yu.*yu + zu.*zu;
-G = xv.*xv + yv.*yv + zv.*zv;
-F = xu.*xv + yu.*yv + zu.*zv;
-J = E.*G - F.^2;
-ux = (G.*xu-F.*xv)./J; vx = (E.*xv-F.*xu)./J;
-uy = (G.*yu-F.*yv)./J; vy = (E.*yv-F.*yu)./J;
-uz = (G.*zu-F.*zv)./J; vz = (E.*zv-F.*zu)./J;
-I = eye(n); % or speye?
-Du = kron(D, I);
-Dv = kron(I, D);
-Dx = ux(:).*Du + vx(:).*Dv;
-Dy = uy(:).*Du + vy(:).*Dv;
-Dz = uz(:).*Du + vz(:).*Dv;
+xu = cat(3, dom.xu{:}); xv = cat(3, dom.xv{:});
+yu = cat(3, dom.yu{:}); yv = cat(3, dom.yv{:});
+zu = cat(3, dom.zu{:}); zv = cat(3, dom.zv{:});
 
-end
+% Normal vectors to the surface (unnormalized)
+nl = -[xu(:,1,:)   yu(:,1,:)   zu(:,1,:)];
+nr =  [xu(:,n,:)   yu(:,n,:)   zu(:,n,:)];
+nd = -[xv(1,:,:) ; yv(1,:,:) ; zv(1,:,:)]; nd = pagetranspose(nd);
+nu =  [xv(n,:,:) ; yv(n,:,:) ; zv(n,:,:)]; nu = pagetranspose(nu);
 
-function [nl, nr, nd, nu] = normals(x, y, z)
-%NORMALS   Outward pointing normal vectors to the edges of a mapping.
+% Tangent vectors to the element boundary (normalized)
+tl = normalize([xv(:,1,:)   yv(:,1,:)   zv(:,1,:)]);
+tr = normalize([xv(:,n,:)   yv(:,n,:)   zv(:,n,:)]);
+td = normalize(pagetranspose([xu(1,:,:) ; yu(1,:,:) ; zu(1,:,:)]));
+tu = normalize(pagetranspose([xu(n,:,:) ; yu(n,:,:) ; zu(n,:,:)]));
 
-persistent D
-n = size(x, 1);
-if ( size(D, 1) ~= n )
-    D = diffmat(n);
-end
-
-xu = x * D.'; xv = D * x;
-yu = y * D.'; yv = D * y;
-zu = z * D.'; zv = D * z;
-
-nl = -normalize([xu(:,1)   yu(:,1)   zu(:,1)]);
-nr =  normalize([xu(:,n)   yu(:,n)   zu(:,n)]);
-nd = -normalize([xv(1,:).' yv(1,:).' zv(1,:).']);
-nu =  normalize([xv(n,:).' yv(n,:).' zv(n,:).']);
-
-tangent = normalize([xv(:,1) yv(:,1) zv(:,1)]);
-nl = nl - tangent .* dot(nl, tangent, 2);
-tangent = normalize([xv(:,n) yv(:,n) zv(:,n)]);
-nr = nr - tangent .* dot(nr, tangent, 2);
-tangent = normalize([xu(1,:).' yu(1,:).' zu(1,:).']);
-nd = nd - tangent .* dot(nd, tangent, 2);
-tangent = normalize([xu(n,:).' yu(n,:).' zu(n,:).']);
-nu = nu - tangent .* dot(nu, tangent, 2);
-
-nl = normalize(nl);
-nr = normalize(nr);
-nd = normalize(nd);
-nu = normalize(nu);
-
-nl([1,n],:) = [];
-nr([1,n],:) = [];
-nd([1,n],:) = [];
-nu([1,n],:) = [];
+% Binormal vectors (normalized)
+nl = normalize(nl - tl .* sum(nl.*tl, 2));
+nr = normalize(nr - tr .* sum(nr.*tr, 2));
+nd = normalize(nd - td .* sum(nd.*td, 2));
+nu = normalize(nu - tu .* sum(nu.*tu, 2));
 
 end
 
 function v = normalize(v)
 
-v = v ./ sqrt(v(:,1).^2 + v(:,2).^2 + v(:,3).^2);
+v = v ./ sqrt(v(:,1,:).^2 + v(:,2,:).^2 + v(:,3,:).^2);
+
+end
+
+function P = skel2leaf(nleaf, nskel)
+%SKEL2LEAF   Boundary interpolation matrix.
+%   SKEL2LEAF(NLEAF, NSKEL) returns the (4*NLEAF-4) x 4*NSKEL matrix that
+%   maps 4 pieces of length-NSKEL first-kind boundary values to 4*NLEAF-4
+%   second-kind boundary values, including the corners. At each corner, the
+%   average of the two interpolated values is used.
+
+[xskel, ~, wskel] = chebpts(nskel, 1);
+[xleaf, ~, wleaf] = chebpts(nleaf, 2);
+B = barymat(xleaf, xskel, wskel);
+
+% Skeleton indices for each side
+leftSkel  = 1:nskel;
+rightSkel = nskel+1:2*nskel;
+downSkel  = 2*nskel+1:3*nskel;
+upSkel    = 3*nskel+1:4*nskel;
+
+% Leaf indices for each side
+leftLeaf  = 1:nleaf;
+rightLeaf = 3*nleaf-3:4*nleaf-4;
+upLeaf    = [nleaf:2:3*nleaf-4 4*nleaf-4];
+downLeaf  = [1 nleaf+1:2:3*nleaf-3];
+
+P = zeros(4*nleaf-4, 4*nskel);
+P(leftLeaf,  leftSkel)  = B;
+P(rightLeaf, rightSkel) = B;
+P(downLeaf,  downSkel)  = B;
+P(upLeaf,    upSkel)    = B;
+
+% Average the corners:
+corners = [1 nleaf 3*nleaf-3 4*nleaf-4];
+P(corners,:) = P(corners,:)/2;
+
+end
+
+function P = leaf2skel(nskel, nleaf)
+%LEAF2SKEL   Boundary interpolation matrix.
+%   LEAF2SKEL(NSKEL, NLEAF) returns the 4*NSKEL x (4*NLEAF-4) matrix that
+%   maps 4*NLEAF-4 second-kind boundary values to 4 pieces of length-NSKEL
+%   first-kind boundary values.
+
+[xskel, ~, wskel] = chebpts(nskel, 1);
+[xleaf, ~, wleaf] = chebpts(nleaf, 2);
+B = barymat(xskel, xleaf, wleaf);
+
+% Skeleton indices for each side
+leftSkel  = 1:nskel;
+rightSkel = nskel+1:2*nskel;
+downSkel  = 2*nskel+1:3*nskel;
+upSkel    = 3*nskel+1:4*nskel;
+
+% Leaf indices for each side
+leftLeaf  = 1:nleaf;
+rightLeaf = 3*nleaf-3:4*nleaf-4;
+upLeaf    = [nleaf:2:3*nleaf-4 4*nleaf-4];
+downLeaf  = [1 nleaf+1:2:3*nleaf-3];
+
+P = zeros(4*nskel, 4*nleaf-4);
+P(leftSkel,  leftLeaf)  = B;
+P(rightSkel, rightLeaf) = B;
+P(downSkel,  downLeaf)  = B;
+P(upSkel,    upLeaf)    = B;
 
 end

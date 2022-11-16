@@ -18,7 +18,6 @@ id = P.id;
 
 ii = false(n);
 ii(2:n-1,2:n-1) = true;
-ii([1,end],[1,end]) = true;
 
 if ( iscell(rhs) )
     nrhs = size(rhs, 2);
@@ -49,9 +48,6 @@ if ( isempty(P.Ainv) )
         'Discretized operator A was not stored. Cannot update RHS.');
 end
 S = P.Ainv(rhs);
-
-% Replace solution operator for corners with interp conditions:
-S([1:2,end-1:end],:) = 0;
 
 % Append boundary points to solution operator:
 tmpS = zeros(n^2, nrhs);

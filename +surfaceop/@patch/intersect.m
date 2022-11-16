@@ -55,13 +55,13 @@ iB = [iB1 ; iB2];
 assert(numel(iA) == numel(iB), 'Intersection failed.');
 
 % Determine indices corresponding to intersecting edges:
-pA = edgesA(:,7) - 2;
+pA = edgesA(:,7);
 ppA = cumsum([0 ; pA]);
 i4a = [];
 for k = 1:numel(iA)
     i4a = [i4a ; ppA(iA(k)) + (1:pA(iA(k))).'];
 end
-pB = edgesB(:,7) - 2;
+pB = edgesB(:,7);
 ppB = cumsum([0 ; pB]);
 i4b = [];
 for k = 1:numel(iB)
