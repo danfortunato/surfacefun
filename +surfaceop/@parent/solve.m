@@ -7,7 +7,7 @@ function u = solve(P, bc)
 if ( ~isnumeric(bc) )
     % Evaluate the RHS if given a function handle:
     bc = feval(bc, P.xyz(:,1), P.xyz(:,2), P.xyz(:,3));
-    bc = repmat(bc, 1, size(P.u_part));
+    bc = repmat(bc, 1, size(P.u_part, 2));
 elseif ( isscalar(bc) )
     % Convert a scalar to a constant vector:
     bc = repmat(bc, size(P.xyz, 1), size(P.u_part, 2));
