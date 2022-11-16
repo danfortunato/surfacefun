@@ -5,6 +5,15 @@ function f = times(f, g)
 %
 %   See also MTIMES, COMPOSE.
 
+if ( isa(g, 'surfacefunv') )
+    h = g;
+    h.components{1} = times(f, g.components{1});
+    h.components{2} = times(f, g.components{2});
+    h.components{3} = times(f, g.components{3});
+    f = h;
+    return
+end
+
 if ( ~isa(f, 'surfacefun') )
     % Ensure F is the SURFACEFUN:
     f = times(g, f);
