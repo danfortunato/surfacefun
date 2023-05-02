@@ -1,5 +1,5 @@
 function c = merge(a, b, rankdef)
-%MERGELR   Merge two patch objects.
+%MERGE   Merge two patch objects.
 %   C = MERGE(A, B) returns a patch C formed by merging the two patches A
 %   and B. Typically A and B will be adjacent and any common edges will be
 %   eliminated by enforcing continuity and continuity of the derivative
@@ -44,10 +44,18 @@ dA = decomposition(A);
 S = dA \ z;
 u_part = dA \ z_part;
 
+if ( isIllConditioned(dA) )
+    warning(['Schur complement linear system is nearly singular. ', ...
+        'Did you forget to set rankdef = true?']);
+end
+
 % Compute new D2N maps:
-Z12 = zeros(numel(i1), numel(i2));
 M = [ D2Na(i1,s1)*flip1.' ; D2Nb(i2,s2)*flip2.' ];
-D2N = [ D2Na(i1,i1) Z12 ; Z12.' D2Nb(i2,i2) ] + M * S;
+D2N = M*S;
+b1 = 1:numel(i1);
+b2 = numel(i1)+(1:numel(i2));
+D2N(b1,b1) = D2N(b1,b1) + D2Na(i1,i1);
+D2N(b2,b2) = D2N(b2,b2) + D2Nb(i2,i2);
 du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + M * u_part;
 
 % Construct the new patch:
