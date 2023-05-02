@@ -20,10 +20,10 @@ k = 1;
 for ku = 1:nu
     for kv = 1:nv
         [uu, vv] = chebpts2(n, n, [ubreaks(ku:ku+1) vbreaks(kv:kv+1)]);
-        [xL{k}, yL{k}, zL{k}] = deal( 0+0*vv, vv, uu);
-        [xR{k}, yR{k}, zR{k}] = deal( 1+0*vv, vv, uu);
-        [xB{k}, yB{k}, zB{k}] = deal(vv,  0+0*vv, uu);
-        [xF{k}, yF{k}, zF{k}] = deal(vv,  1+0*vv, uu);
+        [xL{k}, yL{k}, zL{k}] = deal(0+0*vv, vv,     uu  );
+        [xR{k}, yR{k}, zR{k}] = deal(1+0*vv, vv.',   uu.');
+        [xB{k}, yB{k}, zB{k}] = deal(vv.',   0+0*vv, uu.');
+        [xF{k}, yF{k}, zF{k}] = deal(vv,     1+0*vv, uu  );
         k = k+1;
     end
 end
