@@ -47,38 +47,26 @@ nx = n(1);
 ny = n(2);
 nz = n(3);
 
+[nv, nu] = size(f.vals{1});
+Du = diffmat(nu);
+Dv = diffmat(nv);
+
 for k = 1:length(f)
     vals = f.vals{k};
-    coeffs = chebtech2.vals2coeffs( chebtech2.vals2coeffs(vals).' ).';
-    for m = 1:nx, coeffs = mappedDiff(coeffs, f.domain, k, 1); end
-    for m = 1:ny, coeffs = mappedDiff(coeffs, f.domain, k, 2); end
-    for m = 1:nz, coeffs = mappedDiff(coeffs, f.domain, k, 3); end
-    vals = chebtech2.coeffs2vals( chebtech2.coeffs2vals(coeffs).' ).';
+    for m = 1:nx, vals = mappedVDiff(vals, f.domain, k, 1, Du, Dv); end
+    for m = 1:ny, vals = mappedVDiff(vals, f.domain, k, 2, Du, Dv); end
+    for m = 1:nz, vals = mappedVDiff(vals, f.domain, k, 3, Du, Dv); end
     f.vals{k} = vals;
 end
 
 end
 
-function f = mappedDiff(f, dom, k, dim)
-%MAPPEDDIFF   Mapped derivative of a matrix of Chebyshev coefficients.
-%   MAPPEDDIFF(F, DOM, K, DIM) returns the matrix of Chebyshev coefficients
-%   representing the mapped derivative of F in the dimension DIM. The
-%   mapping is defined by the K-th coordinate transformations in DOM.
+function f = mappedVDiff(f, dom, k, dim, Du, Dv)
 
-    % Compute derivatives on [-1,1]^2
-    [nv, nu] = size(f);
-    dfdu = [ cdiff(f.').', zeros(nv, 1) ];
-    dfdv = [ cdiff(f);     zeros(1, nu) ];
-    
-    %D = diffmat(n);    
-    %dfdu2 = f * D.';
-    %dfdv2 = D * f;
+    dfdu = f * Du.';
+    dfdv = Dv * f;
 
-    % Convert to values to multiply by Jacobian factors
-    dfdu = chebtech2.coeffs2vals( chebtech2.coeffs2vals(dfdu).' ).';
-    dfdv = chebtech2.coeffs2vals( chebtech2.coeffs2vals(dfdv).' ).';
-
-    % Get Jacobian factors for the specified dimension
+     % Get Jacobian factors for the specified dimension
     if ( dim == 1 )
         du = dom.ux{k};
         dv = dom.vx{k};
@@ -93,7 +81,7 @@ function f = mappedDiff(f, dom, k, dim)
     end
 
     % Compute df/dx = (du/dx) df/du + (dv/dx) df/dv
-    vals = du .* dfdu + dv .* dfdv;
+    f = du .* dfdu + dv .* dfdv;
     if ( dom.singular(k) )
         % Computing derivatives will be incorrect on these patches, since
         % we do not divide by the Jacobian. We could perhaps do something
@@ -104,27 +92,5 @@ function f = mappedDiff(f, dom, k, dim)
         %
         % But for now, we live with the incorrect answer on these patches.
     end
-
-    %Dx = ux(:).*Du + vx(:).*Dv;
-    %Dy = uy(:).*Du + vy(:).*Dv;
-    %Dz = uz(:).*Du + vz(:).*Dv;
-
-    % Convert back to coefficients
-    f = chebtech2.vals2coeffs( chebtech2.vals2coeffs(vals).' ).';
-
-end
-
-function dC = cdiff(C)
-%CDIFF   Recurrence relation for coefficients of derivative.
-%   CDIFF(C) returns the matrix of Chebyshev coefficients whose columns are
-%   the derivatives of the columns of C.
-
-[n, m] = size(C);
-dC = zeros(n-1, m);                        % Initialize vector {c_r}
-w = repmat(2*(1:n-1)', 1, m);
-v = w.*C(2:end,:);                         % Temporal vector
-dC(n-1:-2:1,:) = cumsum(v(n-1:-2:1,:), 1); % Compute c_{n-2}, c_{n-4}, ...
-dC(n-2:-2:1,:) = cumsum(v(n-2:-2:1,:), 1); % Compute c_{n-3}, c_{n-5}, ...
-dC(1,:) = .5*dC(1,:);                      % Adjust the value for c_0
 
 end
