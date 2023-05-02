@@ -23,6 +23,13 @@ for ku = 1:nu
     end
 end
 
+% Reorder to create better merge indices:
+ordering = morton(nv, nu);
+ordering = ordering(:);
+x(ordering) = x;
+y(ordering) = y;
+z(ordering) = z;
+
 dom = surfacemesh(x, y, z);
 
 end
