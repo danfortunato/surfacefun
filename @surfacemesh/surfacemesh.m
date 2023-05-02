@@ -127,6 +127,7 @@ classdef surfacemesh < handle
         dom = hemisphere(varargin);
         dom = blob(varargin);
         dom = torus(varargin);
+        dom = square_torus(varargin);
         dom = sharptorus(varargin);
         dom = twisted_torus(varargin);
         dom = cyclide(varargin);
