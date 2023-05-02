@@ -30,8 +30,10 @@ end
 
 function [x, y, z] = evalMobiusStrip(u, v)
 
-x = (1+v/2.*cos(u/2)).*cos(u);
-y = (1+v/2.*cos(u/2)).*sin(u);
-z = v/2.*sin(u/2);
+r = 1;
+k = 1;
+x = (r+v/2.*cos(k*u/2)).*cos(u);
+y = (r+v/2.*cos(k*u/2)).*sin(u);
+z = v/2.*sin(k*u/2);
 
 end
