@@ -23,12 +23,14 @@ for ku = 1:nu
     end
 end
 
-% Reorder to create better merge indices:
-ordering = morton(nv, nu);
-ordering = ordering(:);
-x(ordering) = x;
-y(ordering) = y;
-z(ordering) = z;
+% Try to reorder to create better merge indices:
+if ( bitand(nv, nv-1) == 0 && bitand(nu, nu-1) == 0 )
+    ordering = morton(nv, nu);
+    ordering = ordering(:);
+    x(ordering) = x;
+    y(ordering) = y;
+    z(ordering) = z;
+end
 
 dom = surfacemesh(x, y, z);
 
