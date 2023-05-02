@@ -136,6 +136,7 @@ classdef surfacemesh < handle
         dom = mobius(varargin);
         dom = fromGmsh(varargin);
         dom = fromRhino(varargin);
+        dom = square(varargin);
 
     end
 
