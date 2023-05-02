@@ -105,9 +105,11 @@ end
 
 out = struct();
 out.dxx = 0; out.dyy = 0; out.dzz = 0;
-out.dxy = 0; out.dyz = 0; out.dxz = 0;
+out.dxy = 0; out.dyx = 0;
+out.dyz = 0; out.dzy = 0;
+out.dxz = 0; out.dzx = 0;
 out.dx  = 0; out.dy  = 0; out.dz  = 0;
-out.b = 0;
+out.b   = 0;
 
 % Laplacian shorthand
 if ( isfield(in, 'lap') )
@@ -130,11 +132,11 @@ if ( isfield(in, 'dzz') ), out.dzz = in.dzz; end
 
 % Cross derivatives
 if ( isfield(in, 'dxy') ), out.dxy = in.dxy; end
-if ( isfield(in, 'dyx') ), out.dxy = in.dyx; end
+if ( isfield(in, 'dyx') ), out.dyx = in.dyx; end
 if ( isfield(in, 'dyz') ), out.dyz = in.dyz; end
-if ( isfield(in, 'dzy') ), out.dyz = in.dzy; end
+if ( isfield(in, 'dzy') ), out.dzy = in.dzy; end
 if ( isfield(in, 'dxz') ), out.dxz = in.dxz; end
-if ( isfield(in, 'dzx') ), out.dxz = in.dzx; end
+if ( isfield(in, 'dzx') ), out.dzx = in.dzx; end
 
 % First derivatives
 if ( isfield(in, 'dx') ), out.dx = in.dx; end

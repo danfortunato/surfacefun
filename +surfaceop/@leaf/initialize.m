@@ -37,10 +37,8 @@ numIntPts = sum(ii(:));
 % Skeleton mappings
 nskel = n-2;
 numSkelPts = 4*nskel;
-S2L = skel2leaf(n, nskel);
+S2L = skel2leaf(n, nskel); % Don't sparsify for speed
 L2S = leaf2skel(nskel, n);
-S2L = sparse(S2L);
-L2S = sparse(L2S);
 xskel = chebpts(nskel, 1);
 [xleaf, ~, wleaf] = chebpts(n, 2);
 B = barymat(xskel, xleaf, wleaf);
@@ -59,6 +57,15 @@ NL = pagemtimes(B, NL);
 NR = pagemtimes(B, NR);
 ND = pagemtimes(B, ND);
 NU = pagemtimes(B, NU);
+NN = [NL ; NR ; ND ; NU];
+
+ux = reshape([dom.ux{:}], [n^2 numPatches]); vx = reshape([dom.vx{:}], [n^2 numPatches]);
+uy = reshape([dom.uy{:}], [n^2 numPatches]); vy = reshape([dom.vy{:}], [n^2 numPatches]);
+uz = reshape([dom.uz{:}], [n^2 numPatches]); vz = reshape([dom.vz{:}], [n^2 numPatches]);
+
+tmpS = zeros(n^2, numBdyPts+1);
+tmpS(ee,:) = eye(numBdyPts, numBdyPts+1);
+D2N_scl0 = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%% DEFINE OPERATORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,20 +75,40 @@ I = eye(n);
 II = kron(I, I);
 Du = kron(D, I);
 Dv = kron(I, D);
-opfields = fieldnames(op).';
+
+X = reshape([dom.x{:}], [n^2 numPatches]);
+Y = reshape([dom.y{:}], [n^2 numPatches]);
+Z = reshape([dom.z{:}], [n^2 numPatches]);
+
+flags = structfun(@(f) ~(isscalar(f) && isnumeric(f) && f==0), op, 'UniformOutput', false);
+
+for name = fieldnames(op).'
+    name = name{1};
+    if ( isa(op.(name), 'function_handle') )
+        op.(name) = feval(op.(name), X, Y, Z);
+    elseif ( isa(op.(name), 'surfacefun') )
+        op.(name) = reshape([op.(name).vals{:}], [n^2 numPatches]);
+    elseif ( isscalar(op.(name)) )
+        op.(name) = repmat(op.(name), [1 numPatches]);
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% CONSTANT RHS? %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Define scalar RHSs:
-if ( isnumeric(rhs) && isscalar(rhs) )
-    rhs = repmat(rhs, numIntPts, 1);
+% Evaluate non-constant RHSs if required:
+if ( isa(rhs, 'function_handle') )
+    rhs = feval(rhs, X(ii,:), Y(ii,:), Z(ii,:));
+elseif ( isa(rhs, 'surfacefun') )
+    vals = rhs.vals;
+    rhs = reshape([vals{:}], [n^2 numPatches]);
+    rhs = rhs(ii,:);
+elseif ( isnumeric(rhs) && isscalar(rhs) )
+    rhs = repmat(rhs, numIntPts, numPatches);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%% SOLVE LOCAL PROBLEMS %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Each patch needs a different solution operator.
 
 % Initialize
 L = cell(numPatches, 1);
@@ -98,129 +125,93 @@ for k = 1:numPatches
               x(1,1) y(1,1) z(1,1) x(1,n) y(1,n) z(1,n) nskel ;  % "Down" side
               x(n,1) y(n,1) z(n,1) x(n,n) y(n,n) z(n,n) nskel ]; % "Up" side
 
-    % Evaluate non-constant RHSs if required:
-    if ( isa(rhs, 'function_handle') )
-        rhs_eval = feval(rhs, x(ii), y(ii), z(ii));
-    elseif ( isa(rhs, 'surfacefun') )
-        rhs_eval = rhs.vals{k}(ii);
-    elseif ( iscell(rhs) )
-        rhs_eval = rhs{k};
-    else
-        rhs_eval = rhs;
-    end
-
-    Dx = dom.ux{k}(:).*Du + dom.vx{k}(:).*Dv;
-    Dy = dom.uy{k}(:).*Du + dom.vy{k}(:).*Dv;
-    Dz = dom.uz{k}(:).*Du + dom.vz{k}(:).*Dv;
-    Dxx = Dx^2;
-    Dyy = Dy^2;
-    Dzz = Dz^2;
-    Dxy = Dx*Dy;
-    Dyz = Dy*Dz;
-    Dxz = Dx*Dz;
-    if ( dom.singular(k) )
-        J = dom.J{k}(:);
-        Jx = Dx*J; Jy = Dy*J; Jz = Dz*J;
-        Dxx = J.*Dxx - Jx.*Dx;
-        Dyy = J.*Dyy - Jy.*Dy;
-        Dzz = J.*Dzz - Jz.*Dz;
-        Dxy = J.*Dxy - Jx.*Dy;
-        Dyz = J.*Dyz - Jy.*Dz;
-        Dxz = J.*Dxz - Jz.*Dx;
-        Dx = J.^2.*Dx;
-        Dy = J.^2.*Dy;
-        Dz = J.^2.*Dz;
-        II = J.^3.*II;
-    end
-
-    opk = op;
-    for name = opfields
-        name = name{1};
-        if ( isa(opk.(name), 'function_handle') )
-            opk.(name) = feval(opk.(name), x, y, z);
-        elseif ( isa(opk.(name), 'surfacefun') )
-            opk.(name) = opk.(name).vals{k};
-        end
-    end
-
     A = zeros(n^2);
-    if ( opk.dxx ~= 0 ), A = A + opk.dxx(:).*Dxx; end
-    if ( opk.dyy ~= 0 ), A = A + opk.dyy(:).*Dyy; end
-    if ( opk.dzz ~= 0 ), A = A + opk.dzz(:).*Dzz; end
-    if ( opk.dxy ~= 0 ), A = A + opk.dxy(:).*Dxy; end
-    if ( opk.dyz ~= 0 ), A = A + opk.dyz(:).*Dyz; end
-    if ( opk.dxz ~= 0 ), A = A + opk.dxz(:).*Dxz; end
-    if ( opk.dx  ~= 0 ), A = A + opk.dx(:).*Dx;   end
-    if ( opk.dy  ~= 0 ), A = A + opk.dy(:).*Dy;   end
-    if ( opk.dz  ~= 0 ), A = A + opk.dz(:).*Dz;   end
-    if ( opk.b   ~= 0 ), A = A + opk.b(:).*II;    end
+    Dx = ux(:,k).*Du + vx(:,k).*Dv;
+    Dy = uy(:,k).*Du + vy(:,k).*Dv;
+    Dz = uz(:,k).*Du + vz(:,k).*Dv;
+    J = dom.J{k}(:);
 
-    % Construct solution operator:
     if ( dom.singular(k) )
+
+        % Assemble matrix:
+        if ( flags.dxx ), A = A + op.dxx(:,k).*(J.*(Dx*Dx)-(Dx*J).*Dx); end
+        if ( flags.dyy ), A = A + op.dyy(:,k).*(J.*(Dy*Dy)-(Dy*J).*Dy); end
+        if ( flags.dzz ), A = A + op.dzz(:,k).*(J.*(Dz*Dz)-(Dz*J).*Dz); end
+        if ( flags.dxy ), A = A + op.dxy(:,k).*(J.*(Dx*Dy)-(Dx*J).*Dy); end
+        if ( flags.dyx ), A = A + op.dyx(:,k).*(J.*(Dy*Dx)-(Dy*J).*Dx); end
+        if ( flags.dyz ), A = A + op.dyz(:,k).*(J.*(Dy*Dz)-(Dy*J).*Dz); end
+        if ( flags.dzy ), A = A + op.dzy(:,k).*(J.*(Dz*Dy)-(Dz*J).*Dy); end
+        if ( flags.dxz ), A = A + op.dxz(:,k).*(J.*(Dx*Dz)-(Dx*J).*Dz); end
+        if ( flags.dzx ), A = A + op.dzx(:,k).*(J.*(Dz*Dx)-(Dz*J).*Dx); end
+        if ( flags.dx  ), A = A + op.dx(:,k).*J.^2.*Dx;                 end
+        if ( flags.dy  ), A = A + op.dy(:,k).*J.^2.*Dy;                 end
+        if ( flags.dz  ), A = A + op.dz(:,k).*J.^2.*Dz;                 end
+        if ( flags.b   ), A = A + op.b(:,k).*J.^3.*II;                  end
+
+        % Construct solution operator:
         dA = decomposition(A(ii,ii), 'cod');
-        %dA = decomposition(A(ii,ii));
-        Ainv = @(u) dA \ (dom.J{k}(ii).^3 .* u);
-        %S = Ainv([-A(ii,ee), rhs_eval]);
-        S = dA \ ([-A(ii,ee), dom.J{k}(ii).^3.*rhs_eval]);
+        Ainv = @(u) dA \ (J(ii).^3.*u);
+        S = dA \ ([-A(ii,ee), J(ii).^3.*rhs(:,k)]);
+
+        dx = L2S * (J(ee).^2.*Dx(ee,:));
+        dy = L2S * (J(ee).^2.*Dy(ee,:));
+        dz = L2S * (J(ee).^2.*Dz(ee,:));
+
+        % The D2N map needs to be scaled on each side (e.g. when being
+        % merged) to account for the Jacobian scaling which has been
+        % factored out of the coordinate derivative maps. This scaling
+        % is not known until the merge stage, as it depends on the
+        % scaling of the neighboring patch.
+        Jss = L2S * J(ee).^3;
+        D2N_scl = {Jss(leftSkel); Jss(rightSkel); Jss(downSkel); Jss(upSkel)};
+
     else
+
+        % Assemble matrix:
+        if ( flags.dxx ), A = A + op.dxx(:,k).*(Dx*Dx); end
+        if ( flags.dyy ), A = A + op.dyy(:,k).*(Dy*Dy); end
+        if ( flags.dzz ), A = A + op.dzz(:,k).*(Dz*Dz); end
+        if ( flags.dxy ), A = A + op.dxy(:,k).*(Dx*Dy); end
+        if ( flags.dyx ), A = A + op.dyx(:,k).*(Dy*Dx); end
+        if ( flags.dyz ), A = A + op.dyz(:,k).*(Dy*Dz); end
+        if ( flags.dzy ), A = A + op.dzy(:,k).*(Dz*Dy); end
+        if ( flags.dxz ), A = A + op.dxz(:,k).*(Dx*Dz); end
+        if ( flags.dzx ), A = A + op.dzx(:,k).*(Dz*Dx); end
+        if ( flags.dx  ), A = A + op.dx(:,k).*Dx;       end
+        if ( flags.dy  ), A = A + op.dy(:,k).*Dy;       end
+        if ( flags.dz  ), A = A + op.dz(:,k).*Dz;       end
+        if ( flags.b   ), A = A + op.b(:,k).*II;        end
+
+        % Construct solution operator:
         dA = matlab.internal.decomposition.DenseLU(A(ii,ii));
         Ainv = @(u) solve(dA, u, false);
-        S = Ainv([-A(ii,ee), rhs_eval]);
+        S = Ainv([-A(ii,ee), rhs(:,k)]);
+
+        dx = L2S * Dx(ee,:);
+        dy = L2S * Dy(ee,:);
+        dz = L2S * Dz(ee,:);
+        D2N_scl = D2N_scl0;
     end
 
-    % Append boundary points to solution operator:
-    tmpS = zeros(n^2, numBdyPts+1);
+    % Append boundary points to solution operator and extract the
+    % particular solution to store separately:
     tmpS(ii,:) = S;
-    tmpS(ee,:) = eye(numBdyPts, numBdyPts+1);
-    S = [tmpS(:,1:end-1) * S2L, tmpS(:,end)];
+    S = tmpS(:,1:end-1) * S2L;
+    u_part = tmpS(:,end);
 
     % Construct normal derivative operator:
-    nl = NL(:,:,k);
-    nr = NR(:,:,k);
-    nd = ND(:,:,k);
-    nu = NU(:,:,k);
-    dx = L2S * Dx(ee,:);
-    dy = L2S * Dy(ee,:);
-    dz = L2S * Dz(ee,:);
-    normal_d = zeros(numSkelPts, n^2);
-    normal_d(leftSkel,:)  = nl(:,1).*dx(leftSkel,:)  + nl(:,2).*dy(leftSkel,:)  + nl(:,3).*dz(leftSkel,:);
-    normal_d(rightSkel,:) = nr(:,1).*dx(rightSkel,:) + nr(:,2).*dy(rightSkel,:) + nr(:,3).*dz(rightSkel,:);
-    normal_d(downSkel,:)  = nd(:,1).*dx(downSkel,:)  + nd(:,2).*dy(downSkel,:)  + nd(:,3).*dz(downSkel,:);
-    normal_d(upSkel,:)    = nu(:,1).*dx(upSkel,:)    + nu(:,2).*dy(upSkel,:)    + nu(:,3).*dz(upSkel,:);
+    normal_d = NN(:,1,k).*dx + NN(:,2,k).*dy + NN(:,3,k).*dz;
 
-    % Construct the D2N map:
+    % Construct the D2N map and particular flux;
     D2N = normal_d * S;
+    du_part = normal_d * u_part;
 
-    % The D2N map needs to be scaled on each side (e.g. when being
-    % merged) to account for the Jacobian scaling which has been
-    % factored out of the coordinate derivative maps. This scaling
-    % is not known until the merge stage, as it depends on the
-    % scaling of the neighboring patch.
-    if ( dom.singular(k) )
-        D2N_scl = cell(4, 1);
-        J = dom.J{k}.^3;
-        Jss = L2S * J(ee);
-        D2N_scl{1} = Jss(leftSkel);  % Left
-        D2N_scl{2} = Jss(rightSkel); % Right
-        D2N_scl{3} = Jss(downSkel);  % Down
-        D2N_scl{4} = Jss(upSkel);    % Up
-    else
-        D2N_scl = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
-    end
-
-    % Extract the particular solution to store separately:
-    u_part = S(:,end); S = S(:,1:end-1);
-    du_part = D2N(:,end); D2N = D2N(:,1:end-1);
-    
-    JJ = L2S * sqrt(dom.J{k}(ee));
+    JJ = L2S * sqrt(J(ee));
     ww = wskel .* JJ;
+    xyz = L2S * [x(ee) y(ee) z(ee)];
 
     % Assemble the patch:
-    xee = x(ee);
-    yee = y(ee);
-    zee = z(ee);
-    xyz = L2S * [xee yee zee];
-    L{k} = surfaceop.leaf(dom, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, ww, Ainv, normal_d);
+    L{k} = surfaceop.leaf(dom, n, k, S, D2N, D2N_scl, u_part, du_part, edges, xyz, ww, Ainv, normal_d);
 
 end
 
@@ -233,10 +224,10 @@ function [nl, nr, nd, nu] = binormals(dom)
 %BINORMALS   Compute the binormal vectors for a surfacemesh.
 
 n = size(dom.x{1}, 1);
-
-xu = cat(3, dom.xu{:}); xv = cat(3, dom.xv{:});
-yu = cat(3, dom.yu{:}); yv = cat(3, dom.yv{:});
-zu = cat(3, dom.zu{:}); zv = cat(3, dom.zv{:});
+sz = [n n length(dom)];
+xu = reshape([dom.xu{:}], sz); xv = reshape([dom.xv{:}], sz);
+yu = reshape([dom.yu{:}], sz); yv = reshape([dom.yv{:}], sz);
+zu = reshape([dom.zu{:}], sz); zv = reshape([dom.zv{:}], sz);
 
 % Normal vectors to the surface (unnormalized)
 nl = -[xu(:,1,:)   yu(:,1,:)   zu(:,1,:)];
