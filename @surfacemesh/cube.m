@@ -34,9 +34,6 @@ end
 xx = cat(3, -1+0*uu, 1+0*uu, vv,      uu,     uu,      vv);
 yy = cat(3, uu,      vv,     -1+0*uu, 1+0*uu, vv,      uu);
 zz = cat(3, vv,      uu,     uu,      vv,     -1+0*uu, 1+0*uu);
-%xx = cat(3, -1+0*uu, 1+0*uu, vv, vv, uu, uu);
-%yy = cat(3, uu, uu, -1+0*uu, 1+0*uu, vv, vv);
-%zz = cat(3, vv, vv, uu, uu, -1+0*uu, 1+0*uu);
 
 x = cell(6*nv, 1);
 y = cell(6*nv, 1);
