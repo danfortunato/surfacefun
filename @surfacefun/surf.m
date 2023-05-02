@@ -20,17 +20,32 @@ if ( size(f, 2) > 1 )
     return
 end
 
+p = inputParser;
+p.addParameter('plotpts', 100);
+p.KeepUnmatched = true;
+p.parse(varargin{:});
+nplotpts = p.Results.plotpts;
+argnames = fieldnames(p.Unmatched);
+argvals = struct2cell(p.Unmatched);
+args = [argnames(:).' ; argvals(:).'];
+varargin = args(:).';
+
 holdState = ishold();
 
 for k = 1:length(f)
     u = f.vals{k};
     if ( ~isreal(u) )
-        %u = abs(u);
         u = real(u);
     end
     x = f.domain.x{k};
     y = f.domain.y{k};
     z = f.domain.z{k};
+
+    u = chebvals2plotvals(u, nplotpts);
+    x = chebvals2plotvals(x, nplotpts);
+    y = chebvals2plotvals(y, nplotpts);
+    z = chebvals2plotvals(z, nplotpts);
+
     surface(x, y, z, u, varargin{:});
     hold on
 end
