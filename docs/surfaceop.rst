@@ -127,6 +127,32 @@ Let's check the error:
              6.209136661992651e-12
         </pre>
 
+Surface PDEs on surfaces of arbitrary genus may be solved using ``surfaceop``.
+For example, here is the solution to a variable-coefficient surface Helmholtz
+equation on a genus-1 stellarator geometry:
+
+.. code-block:: matlab
+
+    % Construct the stellarator geometry
+    p = 16; nu = 8; nv = 24;
+    dom = surfacemesh.stellarator(p+1, nu, nv);
+
+    % Variable-coefficient surface Helmholtz equation
+    pdo = [];
+    pdo.lap = 1;
+    pdo.c = @(x,y,z) 300*(1-z);
+
+    f = -1;
+    L = surfaceop(dom, pdo, f);
+    u = L.solve();
+    plot(u), colorbar
+
+.. container:: output-image
+
+    .. figure:: images/helmholtz.png
+        :width: 450px
+        :align: center
+
 Now let's solve a problem on an open surface. We'll create an open surface by
 extracting a subset of the patches from a closed surface:
 
@@ -166,32 +192,6 @@ be passed as an argument:
 
     .. figure:: images/open_sol.png
         :width: 375px
-        :align: center
-
-Surface PDEs on surfaces of arbitrary genus may be solved using ``surfaceop``.
-For example, here is the solution to a variable-coefficient surface Helmholtz
-equation on a genus-1 stellarator geometry:
-
-.. code-block:: matlab
-
-    % Construct the stellarator geometry
-    p = 16; nu = 8; nv = 24;
-    dom = surfacemesh.stellarator(p+1, nu, nv);
-
-    % Variable-coefficient surface Helmholtz equation
-    pdo = [];
-    pdo.lap = 1;
-    pdo.c = @(x,y,z) 300*(1-z);
-
-    f = -1;
-    L = surfaceop(dom, pdo, f);
-    u = L.solve();
-    plot(u), colorbar
-
-.. container:: output-image
-
-    .. figure:: images/helmholtz.png
-        :width: 450px
         :align: center
 
 Modifying an existing ``surfaceop``
