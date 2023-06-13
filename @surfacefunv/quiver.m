@@ -54,9 +54,15 @@ for k = 1:length(dom)
         hold on
     end
 end
-view(3)
 
 h = quiver3(xx, yy, zz, scl*fx, scl*fy, scl*fz, 0, varargin{:});
+
+if ( ~holdState )
+    view(3)
+    axis equal
+    grid on
+    hold off
+end
 
 if ( nargout > 0 )
     varargout = {h};

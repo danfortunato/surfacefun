@@ -45,6 +45,7 @@ end
 
 if ( ~holdState )
     axis equal
+    grid on
 end
 
 if ( ~holdState )

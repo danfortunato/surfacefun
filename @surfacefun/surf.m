@@ -54,6 +54,7 @@ if ( ~holdState )
     view(3)
     shading interp
     axis equal
+    grid on
     hold off
 end
 
