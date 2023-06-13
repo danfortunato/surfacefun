@@ -53,7 +53,7 @@ where :math:`u = u(\boldsymbol{x}, t) \in \mathbb{C}` and :math:`\alpha`,
     N = @(u) u - (1+beta*1i)*u.*(abs(u).^2);
 
     % Import the cow mesh
-    dom = surfacemesh.fromRhino('models/cow.csv', 8);
+    dom = surfacemesh.import('models/cow.csv', 'rhino');
 
     % Construct linear solver
     pdo = struct('lap', -dt*delta*(1+alpha*1i), 'c', 1);
@@ -123,7 +123,7 @@ patterns---namely, spots and stripes---depending on the choice of parameters
     Nv = @(u,v) beta*v.*(1+alpha/beta*tau1*u.*v) + u.*(gamma+tau2*v);
 
     % Import the cow mesh
-    dom = surfacemesh.fromRhino('models/cow.csv', 8);
+    dom = surfacemesh.import('models/cow.csv', 'rhino');
 
     % Construct linear solvers
     pdo = struct('lap', -dt*delta_u, 'b', 1);

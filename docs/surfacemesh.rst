@@ -236,9 +236,13 @@ The mesh does not even have to be smooth between patches...
 Importing an existing mesh
 --------------------------
 
+CAD packages such as `Gmsh <https://gmsh.info/>`_ or
+`Rhino <https://www.rhino3d.com/>`_ can be used to create a high-order smooth
+quadrilateral mesh. Surfacefun supports importing meshes from these packages:
+
 .. code-block:: matlab
 
-    dom = surfacemesh.fromRhino('models/cow.csv');
+    dom = surfacemesh.import('models/cow.csv', 'rhino');
     plot(dom)
     view(180, -85)
     camorbit(20, 0, 'data', 'y')
