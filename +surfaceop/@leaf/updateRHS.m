@@ -16,8 +16,13 @@ n = P.n;
 dom = P.domain;
 id = P.id;
 
+nrhs = 1;
 ii = false(n);
 ii(2:n-1,2:n-1) = true;
+
+if ( iscell(rhs) && isa(rhs{1}, 'function_handle') )
+    rhs = rhs{1};
+end
 
 if ( iscell(rhs) )
     nrhs = size(rhs, 2);
@@ -32,6 +37,7 @@ elseif ( isnumeric(rhs) && ~isscalar(rhs) )
     % We already have the values of the RHS.
 elseif ( isa(rhs, 'function_handle') )
     rhs = feval(rhs, dom.x{id}, dom.y{id}, dom.z{id});
+    rhs = reshape(rhs, n^2, 1);
 end
 
 % Restrict to interior nodes.
