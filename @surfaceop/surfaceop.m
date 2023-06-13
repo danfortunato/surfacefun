@@ -145,5 +145,6 @@ if ( isfield(in, 'dz') ), out.dz = in.dz; end
 
 % Zero-th derivative
 if ( isfield(in, 'b') ), out.b = in.b; end
+if ( isfield(in, 'c') ), out.b = in.c; end % Alternative syntax
 
 end
