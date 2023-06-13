@@ -11,7 +11,7 @@ Surfacefun
    surfaceop
    examples
 
-Surfacefun is MATLAB package for numerically computing with functions on
+Surfacefun is a MATLAB package for numerically computing with functions on
 surfaces with high-order accuracy. It provides abstractions for managing
 high-order unstructured :doc:`surface meshes <surfacemesh>`, representing
 :doc:`scalar functions and vector fields <surfacefun>`, and efficiently
