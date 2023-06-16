@@ -21,3 +21,6 @@
 *.synctex
 *.synctex.gz
 *-converted-to.*
+
+# Documentation
+docs/_build
