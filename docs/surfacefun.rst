@@ -1,7 +1,7 @@
 Functions and vector fields
 ===========================
 
-Once a surace mesh has been constructed, we may define scalar functions and
+Once a surface mesh has been constructed, we may define scalar functions and
 vector fields on the surface.
 
 Scalar functions

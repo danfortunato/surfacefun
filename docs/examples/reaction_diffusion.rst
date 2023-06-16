@@ -90,7 +90,7 @@ shown below.
 Turing system
 -------------
 
-Consider the two-species reaction--diffusion system on a surface :math:`\Gamma$`
+Consider the two-species reaction--diffusion system on a surface :math:`\Gamma`
 given by,
 
 .. math::
