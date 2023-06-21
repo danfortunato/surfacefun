@@ -14,6 +14,8 @@ switch ( prop )
         val = f.domain;
     case {'vals', 'values'}
         val = f.vals;
+    case 'vec'
+        val = f.vec();
     otherwise
         error('SURFACEFUN:get:propName', ...
             [prop,' is not a valid surfacefun property.'])
