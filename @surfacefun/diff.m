@@ -47,16 +47,20 @@ nx = n(1);
 ny = n(2);
 nz = n(3);
 
-[nv, nu] = size(f.vals{1});
+[nv, nu] = size(f(1).vals{1});
 Du = diffmat(nu);
 Dv = diffmat(nv);
 
-for k = 1:length(f)
-    vals = f.vals{k};
-    for m = 1:nx, vals = mappedVDiff(vals, f.domain, k, 1, Du, Dv); end
-    for m = 1:ny, vals = mappedVDiff(vals, f.domain, k, 2, Du, Dv); end
-    for m = 1:nz, vals = mappedVDiff(vals, f.domain, k, 3, Du, Dv); end
-    f.vals{k} = vals;
+% TODO: This can be vectorized across multiple functions.
+nf = builtin('numel', f);
+for j = 1:nf
+    for k = 1:length(f(j))
+        vals = f(j).vals{k};
+        for m = 1:nx, vals = mappedVDiff(vals, f(j).domain, k, 1, Du, Dv); end
+        for m = 1:ny, vals = mappedVDiff(vals, f(j).domain, k, 2, Du, Dv); end
+        for m = 1:nz, vals = mappedVDiff(vals, f(j).domain, k, 3, Du, Dv); end
+        f(j).vals{k} = vals;
+    end
 end
 
 end
@@ -66,7 +70,7 @@ function f = mappedVDiff(f, dom, k, dim, Du, Dv)
     dfdu = f * Du.';
     dfdv = Dv * f;
 
-     % Get Jacobian factors for the specified dimension
+    % Get Jacobian factors for the specified dimension
     if ( dim == 1 )
         du = dom.ux{k};
         dv = dom.vx{k};

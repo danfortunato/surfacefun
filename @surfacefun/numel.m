@@ -4,8 +4,8 @@ function N = numel(f)
 %   SURFACEFUN object F.
 
 N = 0;
-for k = 1:length(f)
-    N = N + numel(f.vals{k});
+for k = 1:length(f(1))
+    N = N + numel(f(1).vals{k});
 end
 
 end

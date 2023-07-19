@@ -9,11 +9,12 @@ function surf(f, varargin)
 %
 %   See also PLOT, CONTOUR, MESH.
 
-if ( size(f, 2) > 1 )
+nf = builtin('numel', f);
+if ( nf > 1 )
     % Plot each column of a surfacefun array in its own figure:
-    for k = 1:size(f, 2)
+    for k = 1:nf
         figure(k)
-        surf(f(:,k), varargin{:})
+        surf(f(k), varargin{:})
     end
     % Align the figures:
     alignfigs
