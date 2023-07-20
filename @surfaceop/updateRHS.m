@@ -11,11 +11,12 @@ assert(isInitialized(S), 'The surfaceop has not been initialized.')
 
 % Extract values if f is a surfacefun:
 if ( isa(f, 'surfacefun') )
-    if ( size(f, 2) == 1 )
+    nrhs = size(f, 2);
+    if ( nrhs == 1 )
         f = f.vals;
     else
-        vals = cell(length(f.domain), size(f, 2));
-        for k = 1:size(f, 2)
+        vals = cell(length(f.domain), nrhs);
+        for k = 1:nrhs
             vals(:,k) = f(:,k).vals;
         end
         f = vals;
