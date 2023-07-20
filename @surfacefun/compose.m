@@ -17,7 +17,7 @@ elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
     % F and G are both SURFACEFUNs:
     nf = builtin('numel', f);
     if ( ~all(size(f) == size(g)) )
-        error('Size of quasimatrices should match.');
+        error('SURFACEFUN:compose:dims', 'Matrix dimensions must agree.');
     end
     for k = 1:nf
         f(k).vals = cellfun(op, f(k).vals, g(k).vals, 'UniformOutput', false);

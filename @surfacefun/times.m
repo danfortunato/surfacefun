@@ -21,23 +21,17 @@ if ( ~isa(f, 'surfacefun') )
 elseif ( isa(g, 'surfacefun' ) )
     % Multiply two SURFACEFUNs:
     % TODO: Check that F and G have the same domain.
-    if ( ~all(size(f) == size(g)) )
-        error('SURFACEFUN:times:dims', 'Matrix dimension must agree.');
-    end
-    nfuns = prod(size(f)); %#ok<PSIZE>
-    for k = 1:nfuns
-        f(k) = compose(@times, f(k), g(k));
-    end
+    f = compose(@times, f, g);
 elseif ( isnumeric(g) && isscalar(g) )
     % Multiply SURFACEFUN F by scalar G:
-    f.vals = cellfun(@(vals) g*vals, f.vals, 'UniformOutput', false);
+    f = compose(@(x) g*x, f);
 elseif ( isnumeric(g) )
     % Multiply SURFACEFUN F by matrix G:
     if ( ~all(size(f) == size(g)) )
-        error('SURFACEFUN:times:dims', 'Matrix dimension must agree.');
+        error('SURFACEFUN:times:dims', 'Matrix dimensions must agree.');
     end
-    nfuns = prod(size(f)); %#ok<PSIZE>
-    for k = 1:nfuns
+    nf = builtin('numel', f);
+    for k = 1:nf
         f(k) = g(k)*f(k);
     end
 else
