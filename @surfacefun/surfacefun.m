@@ -66,9 +66,15 @@ classdef surfacefun
             obj.domain = dom;
 
             if ( isempty(vals) )
+                n = order(dom)+1;
+                xx = reshape([dom.x{:}], [], 1);
+                yy = reshape([dom.y{:}], [], 1);
+                zz = reshape([dom.z{:}], [], 1);
+                ff = feval(func, xx, yy, zz);
+                ff = reshape(ff, [n n length(dom)]);
                 vals = cell(length(dom), 1);
                 for k = 1:length(dom)
-                    vals{k} = feval(func, dom.x{k}, dom.y{k}, dom.z{k});
+                    vals{k} = ff(:,:,k);
                 end
             end
             obj.vals = vals;
