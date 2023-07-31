@@ -44,7 +44,7 @@ elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
         for i = 1:size(f, 1)
             for j = 1:size(g, 2)
                 for k = 1:size(f, 2)
-                    out(i,j) = out(i,j) + integral2( f(i,k).*conj(g(k,j)) );
+                    out(i,j) = out(i,j) + integral2( f(i,k).*g(k,j) );
                 end
             end
         end
