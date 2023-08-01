@@ -30,6 +30,8 @@ classdef surfacefun
                 % Empty SURFACEFUN:
                 obj.vals = {};
                 return
+            elseif ( isa(varargin{1}, 'surfacefun') )
+                error('Invalid call to surfacefun constructor.');
             elseif ( nargin == 1 && isValidDom(varargin{1}) )
                 % Call is: SURFACEFUN(DOM)
                 dom = varargin{1};
