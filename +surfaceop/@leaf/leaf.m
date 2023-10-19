@@ -20,7 +20,7 @@ classdef leaf < surfaceop.patch
 
     methods
 
-        function P = leaf(dom, n, id, S, D2N, D2N_scl, u_part, du_part, edges, xyz, w, Ainv, normal_d)
+        function P = leaf(dom, n, id, S, BtB, BtB_scl, u_part, du_part, edges, xyz, w, Ainv, normal_d)
 
             % Construct empty patch:
             if ( nargin == 0 )
@@ -32,10 +32,10 @@ classdef leaf < surfaceop.patch
             P.n = n;                  % Discretization size.
             P.id = id;                % Index of patch in domain.
             P.S = S;                  % Solution operator.
-            P.D2N = D2N;              % Dirichlet-to-Neumann map.
-            P.D2N_scl = D2N_scl;      % Scalings for Dirichlet-to-Neumann map.
+            P.BtB = BtB;              % Poincare-Steklov operator.
+            P.BtB_scl = BtB_scl;      % Scalings for Poincare-Steklov operator.
             P.u_part = u_part;        % Particular solution.
-            P.du_part = du_part;      % Normal derivative of particular solution.
+            P.du_part = du_part;      % Outgoing boundary data from particular solution.
             P.edges = edges;          % Boundary edges.
             P.xyz = xyz;              % Boundary nodes.
             P.w = w;                  % Boundary quadrature weights.
@@ -50,7 +50,8 @@ classdef leaf < surfaceop.patch
     methods ( Static )
 
         % Initialize an array of LEAF objects.
-        P = initialize(op, dom, rhs);
+        P = initialize_DtN(op, dom, rhs);
+        P = initialize_ItI(op, dom, eta, rhs);
 
     end
 

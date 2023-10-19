@@ -6,11 +6,11 @@ classdef ( Abstract ) patch
         domain  % Domain of patch.
         id      % Index of patch in domain.
         S       % Solution operator for patch.
-        D2N     % Dirichlet-to-Neumann map for patch.
-        D2N_scl % Cell array of scalars or function handles.
-                % The k-th entry is the scaling for the D2N map on side k.
+        BtB     % Poincare-Steklov operator for patch.
+        BtB_scl % Cell array of scalars or function handles.
+                % The k-th entry is the scaling for the BtB map on side k.
         u_part  % Particular solution.
-        du_part % Normal derivative of particular solution.
+        du_part % Outgoing boundary data from particular solution.
         edges   % Boundary edges of patch.
         xyz     % Boundary grid points of patch.
         w       % Boundary quadrature weights of patch.
@@ -21,7 +21,8 @@ classdef ( Abstract ) patch
     methods ( Abstract )
 
         % Solve a patch.
-        [u, d] = solve(P, bc);
+        [u, d] = solve_DtN(P, bc);
+        [u, d] = solve_ItI(P, bc);
 
         % Update RHS of a patch.
         f = updateRHS(f, rhs);

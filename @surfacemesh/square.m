@@ -1,11 +1,15 @@
-function dom = square(n, nref)
+function dom = square(n, nref, rect)
 %SQUARE   Create a square Cartesian mesh.
 
 if ( nargin < 2 )
     nref = 0;
 end
 
-v = [-1 1 -1 1];
+if ( nargin < 3 )
+    rect = [-1 1 -1 1];
+end
+
+v = rect;
 for l = 1:nref
     nv = size(v, 1);
     vnew = zeros(4*nv, 4);

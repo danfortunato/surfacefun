@@ -28,6 +28,13 @@ if ( nargin == 1 )
     bc = [];
 end
 
+switch S.method
+    case 'DtN'
+        solve = @solve_DtN;
+    case 'ItI'
+        solve = @solve_ItI;
+end
+
 % Solve the patch object:
 u = solve(S.patches{1}, bc);
 

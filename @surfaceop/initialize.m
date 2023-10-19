@@ -15,6 +15,11 @@ function initialize(S, varargin)
 %   See also BUILD, SOLVE.
 
 % Initialize all leaf patches:
-S.patches = surfaceop.leaf.initialize(S.op, S.domain, varargin{:});
+switch S.method
+    case 'DtN'
+        S.patches = surfaceop.leaf.initialize_DtN(S.op, S.domain, varargin{:});
+    case 'ItI'
+        S.patches = surfaceop.leaf.initialize_ItI(S.op, S.domain, S.eta, varargin{:});
+end
 
 end

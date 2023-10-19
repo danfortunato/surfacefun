@@ -1,4 +1,4 @@
-function L = initialize(op, dom, rhs)
+function L = initialize_DtN(op, dom, rhs)
 %INITIALIZE   Initialize an array of LEAF objects.
 %   L = SURFACEOP.LEAF.INITIALIZE(OP, DOM) returns a cell array L of LEAF
 %   objects which contain the solution and D2N operators for Poisson's
@@ -36,6 +36,7 @@ numIntPts = sum(ii(:));
 
 % Skeleton mappings
 nskel = n-2;
+%nskel = n;
 numSkelPts = 4*nskel;
 S2L = skel2leaf(n, nskel); % Don't sparsify for speed
 L2S = leaf2skel(nskel, n);

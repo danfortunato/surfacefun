@@ -26,7 +26,7 @@ scl1 = P.scl1;
 scl2 = P.scl2;
 
 % Extract D2N maps:
-D2Na = a.D2N; D2Nb = b.D2N;
+DtNa = a.BtB; DtNb = b.BtB;
 % and discard from children
 % a.D2N = []; b.D2N = [];
 
@@ -36,7 +36,7 @@ P.u_part = P.dA \ (scl2.*(flip1*a.du_part(s1,:)) + scl1.*(flip2*b.du_part(s2,:))
 % Compute new D2N map:
 % TODO: Also scale this???
 P.du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + ...
-            [ D2Na(i1,s1)*flip1.' ; D2Nb(i2,s2)*flip2.' ] * P.u_part;
+            [ DtNa(i1,s1)*flip1.' ; DtNb(i2,s2)*flip2.' ] * P.u_part;
 
 P.child1 = a;
 P.child2 = b;
