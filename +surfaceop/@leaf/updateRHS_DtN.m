@@ -1,4 +1,4 @@
-function P = updateRHS(P, rhs)
+function P = updateRHS_DtN(P, rhs)
 %UPDATERHS   Update RHS of an SURFACEOP.LEAF object.
 %   P = UPDATERHS(P, F) replaces the existing RHS of an initialized
 %   SURFACEOP.LEAF object P with that given in F, which must be a matrix

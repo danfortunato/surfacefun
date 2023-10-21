@@ -63,8 +63,8 @@ du_part = [ h1a + R13a*u_part_a ;
             h2b + R23b*u_part_b ];
 
 % Store the decomposition for reuse in updateRHS():
-A = [];
-dA = [];
+A = I - R33b*R33a;
+dA = decomposition(A);
 
 % Construct the new patch:
 xyz = [a.xyz(i1,:) ; b.xyz(i2,:)];

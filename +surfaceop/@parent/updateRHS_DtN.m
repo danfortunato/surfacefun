@@ -1,4 +1,4 @@
-function P = updateRHS(P, rhs)
+function P = updateRHS_DtN(P, rhs)
 %UPDATERHS   Update RHS of a SURFACEOP.PARENT object.
 %   P = UPDATERHS(P, RHS) replaces the existing RHS of an initialized
 %   SURFACEOP.PARENT object P with that given in RHS, which must be a cell
@@ -13,8 +13,8 @@ end
 n1 = P.child1.len;
 n2 = P.child2.len;
 % Update RHS of children:
-a = updateRHS(P.child1, rhs(1:n1,:));
-b = updateRHS(P.child2, rhs(n1+1:n1+n2,:));
+a = updateRHS_DtN(P.child1, rhs(1:n1,:));
+b = updateRHS_DtN(P.child2, rhs(n1+1:n1+n2,:));
 
 i1 = P.idx1{1};
 s1 = P.idx1{2};

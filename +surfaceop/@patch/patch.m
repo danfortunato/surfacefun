@@ -25,7 +25,8 @@ classdef ( Abstract ) patch
         [u, d] = solve_ItI(P, bc);
 
         % Update RHS of a patch.
-        f = updateRHS(f, rhs);
+        f = updateRHS_DtN(f, rhs);
+        f = updateRHS_ItI(f, rhs);
 
         % Number of degrees of freedom in a patch.
         N = numel(P);
