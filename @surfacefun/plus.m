@@ -5,18 +5,11 @@ function h = plus(f, g)
 %
 %   See also MINUS.
 
-if ( isnumeric( f ) )
-    h = plus(g, f);
+% Empty check:
+if ( isempty(f) )
     return
-elseif ( isnumeric( g ) )
-    h = f;
-    for k = 1:size(h.vals,1)
-        h.vals{k} = h.vals{k} + g;
-    end
-elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
-    h = f;
-    % TODO: Assume on the same grid for now.
-    h.vals = cellfun(@plus, f.vals , g.vals, 'UniformOutput', false);
 end
+
+h = compose(@plus, f, g);
 
 end

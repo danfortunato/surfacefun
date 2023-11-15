@@ -64,8 +64,9 @@ ux = reshape([dom.ux{:}], [n^2 numPatches]); vx = reshape([dom.vx{:}], [n^2 numP
 uy = reshape([dom.uy{:}], [n^2 numPatches]); vy = reshape([dom.vy{:}], [n^2 numPatches]);
 uz = reshape([dom.uz{:}], [n^2 numPatches]); vz = reshape([dom.vz{:}], [n^2 numPatches]);
 
-tmpS = zeros(n^2, numBdyPts+1);
-tmpS(ee,:) = eye(numBdyPts, numBdyPts+1);
+nrhs = size(rhs, 2);
+tmpS = zeros(n^2, numBdyPts+nrhs);
+tmpS(ee,:) = eye(numBdyPts, numBdyPts+nrhs);
 D2N_scl0 = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,12 +101,13 @@ end
 % Evaluate non-constant RHSs if required:
 if ( isa(rhs, 'function_handle') )
     rhs = feval(rhs, X(ii,:), Y(ii,:), Z(ii,:));
+    rhs = reshape(rhs, [numIntPts 1 numPatches]);
 elseif ( isa(rhs, 'surfacefun') )
-    vals = rhs.vals;
-    rhs = reshape([vals{:}], [n^2 numPatches]);
-    rhs = rhs(ii,:);
+    rhs = reshape(rhs.vec(), [n^2 numPatches nrhs]);
+    rhs = permute(rhs, [1 3 2]);
+    rhs = rhs(ii,:,:);
 elseif ( isnumeric(rhs) && isscalar(rhs) )
-    rhs = repmat(rhs, numIntPts, numPatches);
+    rhs = repmat(rhs, [numIntPts 1 numPatches]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -186,7 +188,7 @@ for k = 1:numPatches
         % Construct solution operator:
         dA = matlab.internal.decomposition.DenseLU(A(ii,ii));
         Ainv = @(u) solve(dA, u, false);
-        S = Ainv([-A(ii,ee), rhs(:,k)]);
+        S = Ainv([-A(ii,ee), rhs(:,:,k)]);
 
         dx = L2S * Dx(ee,:);
         dy = L2S * Dy(ee,:);
@@ -197,8 +199,8 @@ for k = 1:numPatches
     % Append boundary points to solution operator and extract the
     % particular solution to store separately:
     tmpS(ii,:) = S;
-    S = tmpS(:,1:end-1) * S2L;
-    u_part = tmpS(:,end);
+    S = tmpS(:,1:numBdyPts) * S2L;
+    u_part = tmpS(:,numBdyPts+1:end);
 
     % Construct normal derivative operator:
     normal_d = NN(:,1,k).*dx + NN(:,2,k).*dy + NN(:,3,k).*dz;

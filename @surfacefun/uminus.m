@@ -6,6 +6,11 @@ function f = uminus(f)
 %
 %   See also UPLUS.
 
-f.vals = cellfun(@uminus, f.vals, 'UniformOutput', false);
+% Empty check:
+if ( isempty(f) )
+    return
+end
+
+f = compose(@uminus, f);
 
 end

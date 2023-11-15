@@ -20,7 +20,7 @@ elseif ( isa(f, 'surfacefun') && isnumeric(g) )
         % Check the dimensions:
         [m, n] = size(g);
         if ( m ~= size(f, 2) || ~ismatrix(g) )
-            error('SURFACEFUN:mtimes:dims', 'Matrix dimensions must agree.');
+            error('SURFACEFUN:mtimes:dims', 'Matrix dimensions must agree. Did you mean ''.*''?');
         end
 
         out = repmat(0*f(:,1), 1, size(g, 2));
@@ -38,7 +38,7 @@ elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
     if ( ismatrix(f) && ismatrix(g) )
         % Check the dimensions:
         if ( size(f, 2) ~= size(g, 1) )
-            error('SURFACEFUN:mtimes:dims', 'Matrix dimensions must agree.');
+            error('SURFACEFUN:mtimes:dims', 'Matrix dimensions must agree. Did you mean ''.*''?');
         end
         out = zeros(size(f, 1), size(g, 2));
         for i = 1:size(f, 1)

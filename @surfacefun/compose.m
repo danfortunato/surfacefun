@@ -9,19 +9,32 @@ function f = compose(op, f, g)
 %   function handle OP is applied to F and G in value space.
 
 if ( nargin == 2 )
-    ff = cellfun(op, f.vals, 'UniformOutput', false);
+    nf = builtin('numel', f);
+    for k = 1:nf
+       f(k).vals = cellfun(op, f(k).vals, 'UniformOutput', false);
+    end
 elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
     % F and G are both SURFACEFUNs:
-    ff = cellfun(op, f.vals, g.vals, 'UniformOutput', false);
+    nf = builtin('numel', f);
+    if ( ~all(size(f) == size(g)) )
+        error('SURFACEFUN:compose:dims', 'Matrix dimensions must agree.');
+    end
+    for k = 1:nf
+        f(k).vals = cellfun(op, f(k).vals, g(k).vals, 'UniformOutput', false);
+    end
 elseif ( isa(f, 'surfacefun') )
     % G is not a SURFACEFUN:
-    ff = cellfun(@(x) op(x,g), f.vals, 'UniformOutput', false);
+    nf = builtin('numel', f);
+    for k = 1:nf
+        f(k).vals = cellfun(@(x) op(x,g), f(k).vals, 'UniformOutput', false);
+    end
 elseif ( isa(g, 'surfacefun') )
     % F is not a SURFACEFUN:
-    ff = cellfun(@(x) op(f,x), g.vals, 'UniformOutput', false);
+    ng = builtin('numel', g);
+    for k = 1:ng
+        g(k).vals = cellfun(@(x) op(f,x), g(k).vals, 'UniformOutput', false);
+    end
     f = g;
 end
-
-f.vals = ff;
 
 end
