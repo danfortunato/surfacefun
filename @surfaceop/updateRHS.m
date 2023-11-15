@@ -28,6 +28,13 @@ if ( ~iscell(f) )
     f = repmat({f}, length(S.domain), 1);
 end
 
+switch S.method
+    case 'DtN'
+        updateRHS = @updateRHS_DtN;
+    case 'ItI'
+        updateRHS = @updateRHS_ItI;
+end
+
 % Update RHS of each patch:
 if ( isBuilt(S) )
     S.patches{1} = updateRHS(S.patches{1}, f);

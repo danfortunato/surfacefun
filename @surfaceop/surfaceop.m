@@ -12,6 +12,8 @@ classdef surfaceop < handle
         patches = {}  % Cell array of surfaceop.Patches.
         mergeIdx = {} % Cell array of merge indices.
         rankdef = false
+        method = []
+        eta = []
 
     end
 
@@ -21,16 +23,27 @@ classdef surfaceop < handle
 
     methods
 
-        function obj = surfaceop(dom, op, rhs, mergeIdx)
+        function obj = surfaceop(dom, op, rhs, mergeIdx, opts)
         %SURACEFOP   Constructor for the SURFACEOP class.
 
-            if ( nargin == 0 )
-                % Construct empty object:
-                return
+            arguments
+                dom = []
+                op = []
+                rhs = 0
+                mergeIdx = surfaceop.defaultIdx(dom)
+                opts.method = 'DtN'
+                opts.eta = 1
             end
 
-            if ( nargin < 3 )
-                rhs = 0;
+            switch lower(opts.method)
+                case {'dtn', 'd2n'}
+                    obj.method = 'DtN';
+                    obj.eta = [];
+                case {'iti', 'i2i'}
+                    obj.method = 'ItI';
+                    obj.eta = opts.eta;
+                otherwise
+                    error('Unknown method ''%s''.', opts.method);
             end
 
             obj.op = parsePDO(op);
@@ -39,9 +52,6 @@ classdef surfaceop < handle
             obj.domain = dom;
 
             % Build merge indices:
-            if ( nargin < 4 )
-                mergeIdx = surfaceop.defaultIdx(dom);
-            end
             obj.mergeIdx = mergeIdx;
 
             % Initialize patches:

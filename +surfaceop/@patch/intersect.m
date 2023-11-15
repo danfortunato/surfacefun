@@ -103,8 +103,8 @@ i2 = (1:sum(pB)).'; i2(i4b) = [];
 
 %% Construct operators for p-adaptivity and Jacobian scaling.
 
-sclA = a.D2N_scl;
-sclB = b.D2N_scl;
+sclA = a.BtB_scl;
+sclB = b.BtB_scl;
 scl1 = cat(1, sclA{iA});
 scl2 = cat(1, sclB{iB});
 if ( isempty(scl1) )

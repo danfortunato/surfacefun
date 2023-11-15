@@ -32,6 +32,13 @@ if ( length(S.domain) == 1 || numel(S.patches) == 1 )
     return
 end
 
+switch S.method
+    case 'DtN'
+        merge = @merge_DtN;
+    case 'ItI'
+        merge = @merge_ItI;
+end
+
 % Loop over each level:
 for j = 1:numel(S.mergeIdx) % <-- number of levels
 

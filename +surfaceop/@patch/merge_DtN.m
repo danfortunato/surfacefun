@@ -1,4 +1,4 @@
-function c = merge(a, b, rankdef)
+function c = merge_DtN(a, b, rankdef)
 %MERGE   Merge two patch objects.
 %   C = MERGE(A, B) returns a patch C formed by merging the two patches A
 %   and B. Typically A and B will be adjacent and any common edges will be
@@ -20,7 +20,7 @@ end
 [i1, i2, s1, s2, flip1, flip2, scl1, scl2, D2N_scl, dom, edges] = intersect(a, b);
 
 % Extract D2N maps:
-D2Na = a.D2N; D2Nb = b.D2N;
+D2Na = a.BtB; D2Nb = b.BtB;
 
 % Compute new solution operator:
 % - The Dirichlet-to-Neumann maps on singular elements have their Jacobians

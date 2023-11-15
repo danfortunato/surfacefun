@@ -55,7 +55,7 @@ while ( head < tail )
             % If the normals are assumed to be smooth across patches, then
             % we can check if the normals match at the corner. Otherwise,
             % I'm not sure what condition to check for outwardness here.
-            if ( abs(dot(normal{j}(cj(1),cj(2),:), normal{k}(ck(1),ck(2),:)) + 1) < 1e-8 )
+            if ( abs(dot(normal{j}(cj(1),cj(2),:), normal{k}(ck(1),ck(2),:)) + 1) < 1e-5 )
             %if ( ~all(abs(normal{j}(cj(1),cj(2),:) + normal{k}(ck(1),ck(2),:)) < 1e-8) )
             %if ( abs(normal{j}(cj(1),cj(2),1) + normal{k}(ck(1),ck(2),1)) < 1e-12 )
                 normal{j} = -normal{j};

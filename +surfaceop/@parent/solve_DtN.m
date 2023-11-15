@@ -1,4 +1,4 @@
-function u = solve(P, bc)
+function u = solve_DtN(P, bc)
 %SOLVE   Solve a parent patch.
 %   U = SOLVE(P, BC) returns a cell array U of function values representing
 %   the PDE solution on the parent P with Dirichlet boundary data given by
@@ -38,8 +38,8 @@ ubc2 = ones(size(P.child2.S, 2)-1, size(P.u_part, 2));
 ubc2(idx2,:) = [bc(i2,:) ; P.flip2.'*u];
 
 % Solve for the child patches:
-u1 = solve(P.child1, ubc1);
-u2 = solve(P.child2, ubc2);
+u1 = solve_DtN(P.child1, ubc1);
+u2 = solve_DtN(P.child2, ubc2);
 
 % Concatenate for output:
 u = [u1 ; u2]; 

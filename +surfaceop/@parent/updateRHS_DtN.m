@@ -1,4 +1,4 @@
-function P = updateRHS(P, rhs)
+function P = updateRHS_DtN(P, rhs)
 %UPDATERHS   Update RHS of a SURFACEOP.PARENT object.
 %   P = UPDATERHS(P, RHS) replaces the existing RHS of an initialized
 %   SURFACEOP.PARENT object P with that given in RHS, which must be a cell
@@ -13,8 +13,8 @@ end
 n1 = P.child1.len;
 n2 = P.child2.len;
 % Update RHS of children:
-a = updateRHS(P.child1, rhs(1:n1,:));
-b = updateRHS(P.child2, rhs(n1+1:n1+n2,:));
+a = updateRHS_DtN(P.child1, rhs(1:n1,:));
+b = updateRHS_DtN(P.child2, rhs(n1+1:n1+n2,:));
 
 i1 = P.idx1{1};
 s1 = P.idx1{2};
@@ -26,7 +26,7 @@ scl1 = P.scl1;
 scl2 = P.scl2;
 
 % Extract D2N maps:
-D2Na = a.D2N; D2Nb = b.D2N;
+DtNa = a.BtB; DtNb = b.BtB;
 % and discard from children
 % a.D2N = []; b.D2N = [];
 
@@ -36,7 +36,7 @@ P.u_part = P.dA \ (scl2.*(flip1*a.du_part(s1,:)) + scl1.*(flip2*b.du_part(s2,:))
 % Compute new D2N map:
 % TODO: Also scale this???
 P.du_part = [ a.du_part(i1,:) ; b.du_part(i2,:) ] + ...
-            [ D2Na(i1,s1)*flip1.' ; D2Nb(i2,s2)*flip2.' ] * P.u_part;
+            [ DtNa(i1,s1)*flip1.' ; DtNb(i2,s2)*flip2.' ] * P.u_part;
 
 P.child1 = a;
 P.child2 = b;

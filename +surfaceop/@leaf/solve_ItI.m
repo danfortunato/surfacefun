@@ -1,4 +1,4 @@
-function u = solve(P, bc)
+function u = solve_ItI(P, bc)
 %SOLVE   Solve a leaf patch.
 %   U = SOLVE(P, BC) returns a cell array containing the solution values U.
 
