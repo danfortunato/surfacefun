@@ -14,8 +14,7 @@ switch S.method
     case 'ItI'
         ItI = S.patches{1}.BtB;
         I = eye(size(ItI));
-        % TODO: Why is the prefactor not -1i*eta?
-        DtN = 1i/S.eta*(ItI-I)\(ItI+I);
+        DtN = -1i*S.eta*((ItI-I)\(ItI+I));
 end
 
 end
