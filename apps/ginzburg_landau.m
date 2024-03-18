@@ -17,7 +17,7 @@ build(L)
 
 %%
 %uinit = randnfunsphere(0.1);
-uinit = randnfun3(0.5, );
+uinit = randnfun3(0.5, boundingbox(dom));
 uinit = uinit / norm(uinit, inf);
 uinit = surfacefun(@(x,y,z) uinit(x,y,z), dom);
 
