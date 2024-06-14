@@ -12,7 +12,7 @@ components,
     \boldsymbol{f} = \underbrace{\nabla_\Gamma u}_{\text{curl-free}} + \underbrace{\boldsymbol{n} \times \nabla_\Gamma v}_{\text{divergence-free}} + \underbrace{\boldsymbol{w}}_{\text{harmonic}}\hspace{-0.15cm},
 
 where :math:`u` and :math:`v` are scalar functions on :math:`\Gamma` and
-:math:`w` is a harmonic vector field, i.e.,
+:math:`boldsymbol{w}` is a harmonic vector field, i.e.,
 
 .. math::
 
@@ -41,8 +41,8 @@ and then set :math:`\boldsymbol{w} = \boldsymbol{f} - \nabla_\Gamma u - \boldsym
     gy = randnfun3(10, boundingbox(dom));
     gz = randnfun3(10, boundingbox(dom));
     g = cross([0 1 1], surfacefunv(@(x,y,z) gx(x,y,z), ...
-                                @(x,y,z) gy(x,y,z), ...
-                                @(x,y,z) gz(x,y,z), dom));
+                                   @(x,y,z) gy(x,y,z), ...
+                                   @(x,y,z) gz(x,y,z), dom));
     vn = normal(dom);
     f = -cross(vn, vn, g);
 
