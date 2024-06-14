@@ -13,7 +13,8 @@ for k = 1:length(dom)
     nodes(j+(1:4),:) = [dom.x{k}(cidx) dom.y{k}(cidx) dom.z{k}(cidx)];
     j = j+4;
 end
-[nodes, ~, elem2node] = unique(nodes, 'rows', 'stable');
+%[nodes, ~, elem2node] = unique(nodes, 'rows', 'stable');
+[nodes, ~, elem2node] = uniquetol(nodes, 'ByRows', true);
 
 % Element i has corner nodes elem2node(i,:)
 elem2node = reshape(elem2node, 4, length(dom)).';
