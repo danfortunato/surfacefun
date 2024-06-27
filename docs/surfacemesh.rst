@@ -163,7 +163,7 @@ routine:
 
 .. code-block:: matlab
 
-    % Create a sphere mesh of order p with two levels of refinement:
+    % Create a blob mesh of order p with two levels of refinement:
     rng(0)
     dom = surfacemesh.blob(p+1, nref);
     plot(dom), camlight
@@ -262,7 +262,7 @@ Convenient ``surfacemesh`` routines
 Visualizing a mesh
 ~~~~~~~~~~~~~~~~~~
 
-- Only plot the wireframe of the , not the underlying surface:
+- Only plot the wireframe of the ``surfacemesh``, not the underlying surface:
 
   .. code-block:: matlab
 
