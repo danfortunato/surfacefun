@@ -11,7 +11,7 @@ varargin = namedargs2cell(parser.Unmatched);
 defaultStyle = {'Color', 'k', 'LineStyle', '-', 'LineWidth', 1};
 
 holdState = ishold();
-if ( ~holdState ), clf('reset'), end
+if ( ~holdState ), cla('reset'), end
 
 x = dom.x;
 y = dom.y;

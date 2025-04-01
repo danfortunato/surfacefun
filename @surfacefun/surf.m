@@ -32,7 +32,7 @@ args = [argnames(:).' ; argvals(:).'];
 varargin = args(:).';
 
 holdState = ishold();
-if ( ~holdState ), clf('reset'), end
+if ( ~holdState ), cla('reset'), end
 
 for k = 1:length(f)
     u = f.vals{k};

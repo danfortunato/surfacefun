@@ -18,7 +18,7 @@ if ( isempty(f) )
 end
 
 holdState = ishold();
-if ( ~holdState ), clf('reset'), end
+if ( ~holdState ), cla('reset'), end
 
 if ( nargin < 2 )
     scl = 1;
