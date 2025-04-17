@@ -69,6 +69,11 @@ f = surfacefun(L.domain);
 V = repmat(surfacefun(L.domain), 1, k);
 V.vec(:) = VV;
 
+if ( L.rankdef )
+    % Make sure the eigenvectors are mean-zero
+    V = V - mean(V);
+end
+
 if ( nargout < 2 )
     varargout = {diag(D)};
 else
