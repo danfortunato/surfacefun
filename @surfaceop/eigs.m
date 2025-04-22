@@ -16,6 +16,9 @@ function varargout = eigs(L, varargin)
 %   EIGS(L, K, SIGMA) returns the K smoothest eigenvalues closest to the
 %   scalar SIGMA, which may be real or complex, including 0.
 %
+%   EIGS(..., 'dirichlet') or EIGS(..., 'neumann') computes Dirichlet or
+%   Neumann eigenvalues, respectively.
+%
 %   EIGS(..., NAME, VALUE) will pass along the name-value arguments to the
 %   built-in EIGS routine. See the documentation of EIGS for more details.
 
@@ -25,28 +28,77 @@ if ( ~isInitialized(L) )
 end
 
 k = 6;
-if ( nargin > 1 && isnumeric(varargin{1}) )
-    k = varargin{1};
-    varargin = varargin(2:end);
+sigma = 0;
+bc = 'dirichlet';
+parsed = [];
+parsed.k     = false;
+parsed.sigma = false;
+parsed.bc    = false;
+
+if ( nargin > 1 )
+    if ( isnumeric(varargin{1}) )
+        k = varargin{1};
+        varargin = varargin(2:end);
+        parsed.k = true;
+    elseif ( (isstring(varargin{1}) || ischar(varargin{1})) && ...
+             any(strcmpi(varargin{1}, {'dirichlet', 'neumann'})) )
+        bc = lower(varargin{1});
+        varargin = varargin(2:end);
+        parsed.bc = true;
+    end
 end
 
-sigma = 0;
-if ( nargin > 2 && isnumeric(varargin{1}) )
-    sigma = varargin{1};
-    varargin = varargin(2:end);
+if ( nargin > 2 )
+    if ( parsed.bc && ~parsed.k && isnumeric(varargin{1}) )
+        k = varargin{1};
+        varargin = varargin(2:end);
+        parsed.k = true;
+    elseif ( parsed.k && isnumeric(varargin{1}) )
+        sigma = varargin{1};
+        varargin = varargin(2:end);
+        parsed.sigma = true;
+    elseif ( parsed.k && (isstring(varargin{1}) || ischar(varargin{1})) && ...
+             any(strcmpi(varargin{1}, {'dirichlet', 'neumann'})) )
+        bc = lower(varargin{1});
+        varargin = varargin(2:end);
+        parsed.bc = true;
+    end
+end
+
+if ( nargin > 3 )
+    if ( parsed.k && parsed.bc && ~parsed.sigma && isnumeric(varargin{1}) )
+        sigma = varargin{1};
+        varargin = varargin(2:end);
+        parsed.sigma = true;
+    elseif ( parsed.k && parsed.sigma && ~parsed.bc && ...
+            (isstring(varargin{1}) || ischar(varargin{1})) && ...
+            any(strcmpi(varargin{1}, {'dirichlet', 'neumann'})) )
+        bc = lower(varargin{1});
+        varargin = varargin(2:end);
+        parsed.bc = true;
+    end
 end
 
 % If a nonzero shift was given then we must rebuild the SURFACEOP:
 if ( sigma ~= 0 )
     pdo = L.op;
     pdo.b = pdo.b - sigma;
-    rankdef = L.rankdef;
     L = surfaceop(L.domain, pdo);
-    L.rankdef = rankdef;
 end
 
 if ( ~isBuilt(L) )
     L.build();
+end
+
+if ( strcmpi(bc, 'neumann') )
+    % Map homogeneous Neumann data to equivalent Dirichlet data
+    DtN = L.DtN();
+    nb = size(DtN, 1);
+    W = ones(nb);
+    dA = decomposition(DtN + W, 'CheckCondition', false);
+    dir_bc = @(x) dA \ -x;
+else
+    dir_bc = @(x) 0;
 end
 
 n = numel(L.domain);
@@ -58,7 +110,8 @@ f = surfacefun(L.domain);
             f = f - mean(f);
         end
         L = L.updateRHS(f); % Overloaded subsasgn doesn't work here.
-        u = L.solve(0);
+        g = dir_bc(L.patches{1}.du_part);
+        u = L.solve(g);
         x = u.vec();
     end
 
