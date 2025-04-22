@@ -64,7 +64,12 @@ du_part = [ h1a + R13a*u_part_a ;
 
 % Store the decomposition for reuse in updateRHS():
 A = I - R33b*R33a;
-dA = decomposition(A);
+dA = decomposition(A, 'CheckCondition', false);
+
+if ( isIllConditioned(dA) )
+    warning(['Schur complement linear system is nearly singular. ', ...
+        'Did you forget to set rankdef = true?']);
+end
 
 % Construct the new patch:
 xyz = [a.xyz(i1,:) ; b.xyz(i2,:)];
