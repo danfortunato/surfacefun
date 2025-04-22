@@ -46,6 +46,10 @@ classdef surfaceop < handle
                     error('Unknown method ''%s''.', opts.method);
             end
 
+            if ( nargin == 0 )
+                return
+            end
+
             obj.op = parsePDO(op);
  
             % Assign the domain:
