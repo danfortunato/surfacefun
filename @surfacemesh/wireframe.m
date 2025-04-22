@@ -4,8 +4,10 @@ function wireframe(dom, varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 parser.addParameter('surface', 'auto', @(s) contains(lower(s), {'auto', 'on', 'off'}));
+parser.addParameter('FaceColor', 'w');
 parse(parser, varargin{:});
 showSurface = parser.Results.surface;
+faceColor = parser.Results.FaceColor;
 varargin = namedargs2cell(parser.Unmatched);
 
 defaultStyle = {'Color', 'k', 'LineStyle', '-', 'LineWidth', 1};
@@ -34,12 +36,17 @@ if ( (~holdState && strcmpi(showSurface, 'auto')) || strcmpi(showSurface, 'on') 
     % Plot the surface, making it slightly smaller so lines show up
     % more clearly.
     hold on
+    if ( isnumeric(faceColor) && all(size(faceColor) == [length(dom) 3]) )
+        color = @(k) faceColor(k,:);
+    else
+        color = @(k) faceColor;
+    end
     for k = 1:length(dom)
         scl = 0.005;
         surface(dom.x{k} - scl*vn{k}(:,:,1), ...
                 dom.y{k} - scl*vn{k}(:,:,2), ...
                 dom.z{k} - scl*vn{k}(:,:,3), ...
-                0*dom.x{k}, 'FaceColor', 'w', 'EdgeColor', 'none', ...
+                0*dom.x{k}, 'FaceColor', color(k), 'EdgeColor', 'none', ...
                 'AmbientStrength', 0.6, 'DiffuseStrength', 0.4, 'SpecularStrength', 0.3);
     end
 end
