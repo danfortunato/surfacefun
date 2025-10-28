@@ -8,16 +8,14 @@ if ( isempty(dom) )
     return
 end
 
-[nv, nu] = size(dom.x{1});
-wu = chebtech2.quadwts(nu); wu = wu(:);
-wv = chebtech2.quadwts(nv); wv = wv(:);
+W = quadwts(dom);
 
 V = 0;
 for k = 1:length(dom)
     I = (dom.x{k} .* dom.facenormals{k}(:,:,1) + ...
          dom.y{k} .* dom.facenormals{k}(:,:,2) + ...
          dom.z{k} .* dom.facenormals{k}(:,:,3)) / 3;
-    V = V + sum(sum(I .* wv .* wu.' .* sqrt(dom.J{k})));
+    V = V + sum(I .* W(:,:,k), 'all');
 end
 
 %%% Alternative way:
