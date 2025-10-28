@@ -7,7 +7,8 @@ function x = vec(f)
 %
 %   See also SUBSASGN.
 
-n = order(f(1).domain) + 1;
+[nu, nv] = size(f(1).domain);
+npts = nu*nv;
 numPatches = length(f(1).domain);
 numDOF = numel(f(1));
 numFuns = size(f, 2);
@@ -15,7 +16,7 @@ numFuns = size(f, 2);
 x = zeros(numDOF, numFuns);
 for j = 1:numFuns
     for k = 1:numPatches
-        x((k-1)*n^2+(1:n^2), j) = f(:,j).vals{k}(:);
+        x((k-1)*npts+(1:npts), j) = f(:,j).vals{k}(:);
     end
 end
 

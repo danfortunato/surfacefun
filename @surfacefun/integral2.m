@@ -24,12 +24,10 @@ end
 
 % If a patch uses an N x N discretization, then quadrature is performed on
 % that patch using N points.
+W = quadwts(f.domain);
 I = zeros(length(f), 1);
 for k = 1:length(f)
-    [nv, nu] = size(f.vals{k});
-    wu = chebtech2.quadwts(nu); wu = wu(:);
-    wv = chebtech2.quadwts(nv); wv = wv(:);
-    I(k) = sum(sum(f.vals{k} .* wv .* wu.' .* sqrt(f.domain.J{k})));
+    I(k) = sum(f.vals{k} .* W(:,:,k), 'all');
 end
 
 % Combine norms on each element.

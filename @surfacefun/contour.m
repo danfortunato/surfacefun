@@ -35,11 +35,39 @@ if ( isempty(levels) )
     levels = linspace(minu, maxu, N);
 end
 
+ff = f.vals;
+xx = f.domain.x;
+yy = f.domain.y;
+zz = f.domain.z;
+n = order(f)+1;
+[bk, ~, vk] = chebpts(n);
+
+if ( ~all(f.domain.ptype == f.domain.ptype(1)) )
+    error('Heterogeneous patch types are not yet supported.');
+end
+
+if ( f.domain.ptype(1) == 'tri' ) %#ok<BDSCA>
+    % Convert triangle points to tensor-product points using the Duffy
+    % transformation so that we can use MATLAB's built-in contour().
+    [eta1, eta2] = chebpts2(n, n, [0 1 0 1]);
+    xd = eta1.*(1-eta2);
+    yd = eta2;
+    K  = koornwinder(n-1);
+    Kd = koornwinder(n-1, xd, yd);
+    B = Kd / K;
+    for k = 1:length(f)
+        ff{k} = reshape(B*ff{k}, n, n);
+        xx{k} = reshape(B*xx{k}, n, n);
+        yy{k} = reshape(B*yy{k}, n, n);
+        zz{k} = reshape(B*zz{k}, n, n);
+    end
+end
+
 % Loop over the patches:
 m = 100;
 [uu, vv] = meshgrid(linspace(-1, 1, m));
 for j = 1:length(f)
-    u = chebvals2plotvals(f.vals{j});
+    u = chebvals2plotvals(ff{j});
     if ( ~isreal(u) )
         u = abs(u);
     end
@@ -59,25 +87,25 @@ for j = 1:length(f)
 
     % If the plot is not being added to another then plot the surface so
     % that the lines are more easily discernable.
-    if ( ~holdState )
+    %if ( ~holdState )
         % Plot the surface, making it slightly smaller so lines show up
         % more clearly.
-        xx = f.domain.x{j};
-        yy = f.domain.y{j};
-        zz = f.domain.z{j};
-        scl = 0.99;
-        surf(scl*xx, scl*yy, scl*zz, 1+0*xx, 'FaceColor', 'w', 'EdgeColor', 'None');
-        hold on
-    end
+        %xx = f.domain.x{j};
+        %yy = f.domain.y{j};
+        %zz = f.domain.z{j};
+        %scl = 0.99;
+        %surf(scl*xx{j}, scl*yy{j}, scl*zz{j}, 1+0*xx{j}, 'FaceColor', 'w', 'EdgeColor', 'None');
+        %hold on
+    %end
 
     % Plot the contours on the surface.
     k = 1;
     while ( k < size(C, 2) )
         kl = C(2, k);
         v = k+1:k+kl;
-        xv = bary2d(f.domain.x{j}, C(1, v), C(2, v));
-        yv = bary2d(f.domain.y{j}, C(1, v), C(2, v));
-        zv = bary2d(f.domain.z{j}, C(1, v), C(2, v));
+        xv = bary2d(xx{j}, C(1, v), C(2, v), bk, vk);
+        yv = bary2d(yy{j}, C(1, v), C(2, v), bk, vk);
+        zv = bary2d(zz{j}, C(1, v), C(2, v), bk, vk);
 
         % If the line color is a float then we are plotting all contours in
         % a single color.
@@ -93,6 +121,10 @@ for j = 1:length(f)
         hold on
     end
 end
+
+% Plot the surface, making it slightly smaller so lines show up
+plot(f.domain, edges='off', surface='on')
+
 axis equal
 
 if ( ~holdState )
@@ -101,12 +133,12 @@ end
 
 end
 
-function out = bary2d(vals, x, y)
+function out = bary2d(vals, x, y, bk, vk)
 
 out = zeros(size(x));
-yvals = bary(y(:), vals).';
+yvals = bary(y(:), vals, bk, vk).';
 for k = 1:numel(x)
-    out(k) = bary(x(k), yvals(:,k));
+    out(k) = bary(x(k), yvals(:,k), bk, vk);
 end
 out = reshape(out, size(x));
 

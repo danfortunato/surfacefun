@@ -111,26 +111,31 @@ function int = integrate(f, p)
 % P should be an integer.
 p = round(p);
 
-% If a patch uses an N x N discretization, then quadrature is performed on
-% that patch using N*P points.
-int = zeros(length(f), 1);
-for k = 1:length(f)
-    [nv, nu] = size(f.vals{k});
-    qu = nu*p;
-    qv = nv*p;
-    nv = min(nv, qv);
-    nu = min(nu, qu);
-    coeffs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.vals{k}).').';
-    U = zeros(qv, qu);
-    U(1:nv,1:nu) = coeffs(1:nv,1:nu);
-    V = chebtech2.coeffs2vals(chebtech2.coeffs2vals(U).').';
-    J_cfs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.domain.J{k}).').';
-    J_q = zeros(qv, qu);
-    J_q(1:nv,1:nu) = J_cfs(1:nv,1:nu);
-    J = chebtech2.coeffs2vals(chebtech2.coeffs2vals(J_q).').';
-    wu = chebtech2.quadwts(qu); wu = wu(:);
-    wv = chebtech2.quadwts(qv); wv = wv(:);
-    int(k) = sum(sum(abs(V).^p .* wv .* wu.' .* sqrt(J))).^(1/p);
+if ( any(f.domain.ptype == 'tri') )
+    int = integral(abs(f).^p, 'all').^(1/p);
+else
+    % Use upsampled quadrature for dealiasing on a quadrilateral patch.
+    % If a patch uses an N x N discretization, then quadrature is performed on
+    % that patch using N*P points.
+    int = zeros(length(f), 1);
+    for k = 1:length(f)
+        [nv, nu] = size(f.vals{k});
+        qu = nu*p;
+        qv = nv*p;
+        nv = min(nv, qv);
+        nu = min(nu, qu);
+        coeffs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.vals{k}).').';
+        U = zeros(qv, qu);
+        U(1:nv,1:nu) = coeffs(1:nv,1:nu);
+        V = chebtech2.coeffs2vals(chebtech2.coeffs2vals(U).').';
+        J_cfs = chebtech2.vals2coeffs(chebtech2.vals2coeffs(f.domain.J{k}).').';
+        J_q = zeros(qv, qu);
+        J_q(1:nv,1:nu) = J_cfs(1:nv,1:nu);
+        J = chebtech2.coeffs2vals(chebtech2.coeffs2vals(J_q).').';
+        wu = chebtech2.quadwts(qu); wu = wu(:);
+        wv = chebtech2.quadwts(qv); wv = wv(:);
+        int(k) = sum(sum(abs(V).^p .* wv .* wu.' .* sqrt(J))).^(1/p);
+    end
 end
 
 end
