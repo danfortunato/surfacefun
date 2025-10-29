@@ -4,7 +4,7 @@ function u = solve_DtN(P, bc)
 
 % Extract the domain from the patch:
 id = P.id;
-n = size(P.domain.x{id}, 1);
+[nv, nu] = size(P.domain.x{id});
 
 if ( ~isnumeric(bc) )
     % Evaluate the RHS if given a function handle:
@@ -20,7 +20,7 @@ u = P.S * bc + P.u_part;
 % Return cell output for consistency with PARENT/SOLVE():
 U = cell(1, size(u, 2));
 for k = 1:size(u, 2)
-    U{k} = reshape(u(:,k), n, n);
+    U{k} = reshape(u(:,k), nv, nu);
 end
 u = U;
 

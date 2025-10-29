@@ -1,4 +1,4 @@
-function L = initialize_DtN(op, dom, rhs)
+function L = initialize_DtN_tri(op, dom, rhs)
 %INITIALIZE   Initialize an array of LEAF objects.
 %   L = SURFACEOP.LEAF.INITIALIZE(OP, DOM) returns a cell array L of LEAF
 %   objects which contain the solution and D2N operators for Poisson's
@@ -23,64 +23,66 @@ if ( nargin < 3 )
 end
 
 numPatches = length(dom);
-n = size(dom.x{1}, 1);
+npts = length(dom.x{1});
+n = order(dom)+1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%% DEFINE REFERENCE GRID %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[X, Y] = chebpts2(n);             % Chebyshev points and grid.
-ii = abs(X) < 1 & abs(Y) < 1;     % Interior indices.
-ee = ~ii;                         % Boundary indices.
+[xx, yy] = trianglepts(n);
+eleft  = 1:n;
+edown  = cumsum([1 (n:-1:2)]);
+ehypot = cumsum([n (n-1:-1:1)]);
+eeIdx = unique([eleft edown ehypot]);
+ee = false(size(xx));
+ee(eeIdx) = true;    % Boundary indices
+ii = ~ee;            % Interior indices
 numBdyPts = sum(ee(:));
 numIntPts = sum(ii(:));
 
 % Skeleton mappings
 nskel = n-2;
-%nskel = n;
-numSkelPts = 4*nskel;
+numSkelPts = 3*nskel;
 S2L = skel2leaf(n, nskel); % Don't sparsify for speed
 L2S = leaf2skel(nskel, n);
 xskel = chebpts(nskel, 1);
 [xleaf, ~, wleaf] = chebpts(n, 2);
 B = barymat(xskel, xleaf, wleaf);
 w = chebtech1.quadwts(nskel); w = w(:);
-wskel = [w ; w ; w ; w];
+wskel = [0.5*w ; 0.5*w ; sqrt(2)/2*w];
 
 % Skeleton indices for each side
 leftSkel  = 1:nskel;
-rightSkel = nskel+1:2*nskel;
-downSkel  = 2*nskel+1:3*nskel;
-upSkel    = 3*nskel+1:4*nskel;
+downSkel  = nskel+1:2*nskel;
+hypotSkel = 2*nskel+1:3*nskel;
 
 % Compute binormal vectors on the skeleton
-[NL, NR, ND, NU] = binormals(dom);
+[NL, ND, NH] = binormals(dom);
 NL = pagemtimes(B, NL);
-NR = pagemtimes(B, NR);
 ND = pagemtimes(B, ND);
-NU = pagemtimes(B, NU);
-NN = [NL ; NR ; ND ; NU];
+NH = pagemtimes(B, NH);
+NN = [NL ; ND ; NH];
 
-ux = reshape([dom.ux{:}], [n^2 numPatches]); vx = reshape([dom.vx{:}], [n^2 numPatches]);
-uy = reshape([dom.uy{:}], [n^2 numPatches]); vy = reshape([dom.vy{:}], [n^2 numPatches]);
-uz = reshape([dom.uz{:}], [n^2 numPatches]); vz = reshape([dom.vz{:}], [n^2 numPatches]);
+ux = reshape([dom.ux{:}], [npts numPatches]); vx = reshape([dom.vx{:}], [npts numPatches]);
+uy = reshape([dom.uy{:}], [npts numPatches]); vy = reshape([dom.vy{:}], [npts numPatches]);
+uz = reshape([dom.uz{:}], [npts numPatches]); vz = reshape([dom.vz{:}], [npts numPatches]);
 
 nrhs = size(rhs, 2);
-tmpS = zeros(n^2, numBdyPts+nrhs);
+tmpS = zeros(npts, numBdyPts+nrhs);
 tmpS(ee,:) = eye(numBdyPts, numBdyPts+nrhs);
-D2N_scl0 = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
+D2N_scl0 = {ones(nskel,1) ; ones(nskel,1) ; ones(nskel,1)};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%% DEFINE OPERATORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-D = diffmat(n);
-I = eye(n);
-II = kron(I, I);
-Du = kron(D, I);
-Dv = kron(I, D);
+[K, Ku, Kv] = koornwinder(n-1, xx, yy);
+Du = Ku / K;
+Dv = Kv / K;
+II = eye(npts);
 
-X = reshape([dom.x{:}], [n^2 numPatches]);
-Y = reshape([dom.y{:}], [n^2 numPatches]);
-Z = reshape([dom.z{:}], [n^2 numPatches]);
+X = reshape([dom.x{:}], [npts numPatches]);
+Y = reshape([dom.y{:}], [npts numPatches]);
+Z = reshape([dom.z{:}], [npts numPatches]);
 
 flags = structfun(@(f) ~(isscalar(f) && isnumeric(f) && f==0), op, 'UniformOutput', false);
 
@@ -89,7 +91,7 @@ for name = fieldnames(op).'
     if ( isa(op.(name), 'function_handle') )
         op.(name) = feval(op.(name), X, Y, Z);
     elseif ( isa(op.(name), 'surfacefun') )
-        op.(name) = reshape([op.(name).vals{:}], [n^2 numPatches]);
+        op.(name) = reshape([op.(name).vals{:}], [npts numPatches]);
     elseif ( isscalar(op.(name)) )
         op.(name) = repmat(op.(name), [1 numPatches]);
     end
@@ -103,7 +105,7 @@ if ( isa(rhs, 'function_handle') )
     rhs = feval(rhs, X(ii,:), Y(ii,:), Z(ii,:));
     rhs = reshape(rhs, [numIntPts 1 numPatches]);
 elseif ( isa(rhs, 'surfacefun') )
-    rhs = reshape(rhs.vec(), [n^2 numPatches nrhs]);
+    rhs = reshape(rhs.vec(), [npts numPatches nrhs]);
     rhs = permute(rhs, [1 3 2]);
     rhs = rhs(ii,:,:);
 elseif ( isnumeric(rhs) && isscalar(rhs) )
@@ -123,12 +125,11 @@ for k = 1:numPatches
     x = dom.x{k};
     y = dom.y{k};
     z = dom.z{k};
-    edges = [ x(1,1) y(1,1) z(1,1) x(n,1) y(n,1) z(n,1) nskel ;  % "Left" side
-              x(1,n) y(1,n) z(1,n) x(n,n) y(n,n) z(n,n) nskel ;  % "Right" side
-              x(1,1) y(1,1) z(1,1) x(1,n) y(1,n) z(1,n) nskel ;  % "Down" side
-              x(n,1) y(n,1) z(n,1) x(n,n) y(n,n) z(n,n) nskel ]; % "Up" side
+    edges = [ x(1) y(1) z(1) x(n)   y(n)   z(n)   nskel ;  % "Left" side
+              x(1) y(1) z(1) x(end) y(end) z(end) nskel ;  % "Down" side
+              x(n) y(n) z(n) x(end) y(end) z(end) nskel ]; % "Hypot" side
 
-    A = zeros(n^2);
+    A = zeros(npts);
     Dx = ux(:,k).*Du + vx(:,k).*Dv;
     Dy = uy(:,k).*Du + vy(:,k).*Dv;
     Dz = uz(:,k).*Du + vz(:,k).*Dv;
@@ -166,7 +167,7 @@ for k = 1:numPatches
         % is not known until the merge stage, as it depends on the
         % scaling of the neighboring patch.
         Jss = L2S * J(ee).^3;
-        D2N_scl = {Jss(leftSkel); Jss(rightSkel); Jss(downSkel); Jss(upSkel)};
+        D2N_scl = {Jss(leftSkel); Jss(downSkel); Jss(hypotSkel)};
 
     else
 
@@ -223,32 +224,36 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% DEFINE OPERATORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [nl, nr, nd, nu] = binormals(dom)
+function [nl, nd, nh] = binormals(dom)
 %BINORMALS   Compute the binormal vectors for a surfacemesh.
 
-n = size(dom.x{1}, 1);
-sz = [n n length(dom)];
+n = order(dom)+1;
+eleft  = 1:n;
+edown  = cumsum([1 (n:-1:2)]);
+ehypot = cumsum([n (n-1:-1:1)]);
+
+npts = size(dom.x{1}, 1);
+sz = [npts 1 length(dom)];
 xu = reshape([dom.xu{:}], sz); xv = reshape([dom.xv{:}], sz);
 yu = reshape([dom.yu{:}], sz); yv = reshape([dom.yv{:}], sz);
 zu = reshape([dom.zu{:}], sz); zv = reshape([dom.zv{:}], sz);
 
 % Normal vectors to the surface (unnormalized)
-nl = -[xu(:,1,:)   yu(:,1,:)   zu(:,1,:)];
-nr =  [xu(:,n,:)   yu(:,n,:)   zu(:,n,:)];
-nd = -[xv(1,:,:) ; yv(1,:,:) ; zv(1,:,:)]; nd = pagetranspose(nd);
-nu =  [xv(n,:,:) ; yv(n,:,:) ; zv(n,:,:)]; nu = pagetranspose(nu);
+nl = -[xu(eleft,:,:)  yu(eleft,:,:)  zu(eleft,:,:)];
+nd = -[xv(edown,:,:)  yv(edown,:,:)  zv(edown,:,:)];
+nh =  [xu(ehypot,:,:) yu(ehypot,:,:) zu(ehypot,:,:)] + ...
+      [xv(ehypot,:,:) yv(ehypot,:,:) zv(ehypot,:,:)];
 
 % Tangent vectors to the element boundary (normalized)
-tl = normalize([xv(:,1,:)   yv(:,1,:)   zv(:,1,:)]);
-tr = normalize([xv(:,n,:)   yv(:,n,:)   zv(:,n,:)]);
-td = normalize(pagetranspose([xu(1,:,:) ; yu(1,:,:) ; zu(1,:,:)]));
-tu = normalize(pagetranspose([xu(n,:,:) ; yu(n,:,:) ; zu(n,:,:)]));
+tl = normalize([xv(eleft,:,:)   yv(eleft,:,:)   zv(eleft,:,:)]);
+td = normalize([xu(edown,:,:)   yu(edown,:,:)   zu(edown,:,:)]);
+th = normalize( -[xv(ehypot,:,:) yv(ehypot,:,:) zv(ehypot,:,:)] + ...
+                 [xu(ehypot,:,:) yu(ehypot,:,:) zu(ehypot,:,:)] );
 
 % Binormal vectors (normalized)
 nl = normalize(nl - tl .* sum(nl.*tl, 2));
-nr = normalize(nr - tr .* sum(nr.*tr, 2));
 nd = normalize(nd - td .* sum(nd.*td, 2));
-nu = normalize(nu - tu .* sum(nu.*tu, 2));
+nh = normalize(nh - th .* sum(nh.*th, 2));
 
 end
 
@@ -260,8 +265,8 @@ end
 
 function P = skel2leaf(nleaf, nskel)
 %SKEL2LEAF   Boundary interpolation matrix.
-%   SKEL2LEAF(NLEAF, NSKEL) returns the (4*NLEAF-4) x 4*NSKEL matrix that
-%   maps 4 pieces of length-NSKEL first-kind boundary values to 4*NLEAF-4
+%   SKEL2LEAF(NLEAF, NSKEL) returns the (3*NLEAF-3) x 3*NSKEL matrix that
+%   maps 3 pieces of length-NSKEL first-kind boundary values to 3*NLEAF-3
 %   second-kind boundary values, including the corners. At each corner, the
 %   average of the two interpolated values is used.
 
@@ -271,32 +276,31 @@ B = barymat(xleaf, xskel, wskel);
 
 % Skeleton indices for each side
 leftSkel  = 1:nskel;
-rightSkel = nskel+1:2*nskel;
-downSkel  = 2*nskel+1:3*nskel;
-upSkel    = 3*nskel+1:4*nskel;
+downSkel  = nskel+1:2*nskel;
+hypotSkel = 2*nskel+1:3*nskel;
 
 % Leaf indices for each side
 leftLeaf  = 1:nleaf;
-rightLeaf = 3*nleaf-3:4*nleaf-4;
-upLeaf    = [nleaf:2:3*nleaf-4 4*nleaf-4];
+%downLeaf  = [1 nleaf+1:2*nleaf-1];
 downLeaf  = [1 nleaf+1:2:3*nleaf-3];
+%hypotLeaf = [nleaf 2*nleaf:3*nleaf-3 2*nleaf-1];
+hypotLeaf = [nleaf:2:3*nleaf-4 3*nleaf-3];
 
-P = zeros(4*nleaf-4, 4*nskel);
+P = zeros(3*nleaf-3, 3*nskel);
 P(leftLeaf,  leftSkel)  = B;
-P(rightLeaf, rightSkel) = B;
 P(downLeaf,  downSkel)  = B;
-P(upLeaf,    upSkel)    = B;
+P(hypotLeaf, hypotSkel) = B;
 
 % Average the corners:
-corners = [1 nleaf 3*nleaf-3 4*nleaf-4];
+corners = [1 nleaf 3*nleaf-3];
 P(corners,:) = P(corners,:)/2;
 
 end
 
 function P = leaf2skel(nskel, nleaf)
 %LEAF2SKEL   Boundary interpolation matrix.
-%   LEAF2SKEL(NSKEL, NLEAF) returns the 4*NSKEL x (4*NLEAF-4) matrix that
-%   maps 4*NLEAF-4 second-kind boundary values to 4 pieces of length-NSKEL
+%   LEAF2SKEL(NSKEL, NLEAF) returns the 3*NSKEL x (3*NLEAF-3) matrix that
+%   maps 3*NLEAF-3 second-kind boundary values to 3 pieces of length-NSKEL
 %   first-kind boundary values.
 
 [xskel, ~, wskel] = chebpts(nskel, 1);
@@ -305,20 +309,19 @@ B = barymat(xskel, xleaf, wleaf);
 
 % Skeleton indices for each side
 leftSkel  = 1:nskel;
-rightSkel = nskel+1:2*nskel;
-downSkel  = 2*nskel+1:3*nskel;
-upSkel    = 3*nskel+1:4*nskel;
+downSkel  = nskel+1:2*nskel;
+hypotSkel = 2*nskel+1:3*nskel;
 
 % Leaf indices for each side
 leftLeaf  = 1:nleaf;
-rightLeaf = 3*nleaf-3:4*nleaf-4;
-upLeaf    = [nleaf:2:3*nleaf-4 4*nleaf-4];
+%downLeaf  = [1 nleaf+1:2*nleaf-1];
 downLeaf  = [1 nleaf+1:2:3*nleaf-3];
+%hypotLeaf = [nleaf 2*nleaf:3*nleaf-3 2*nleaf-1];
+hypotLeaf = [nleaf:2:3*nleaf-4 3*nleaf-3];
 
-P = zeros(4*nskel, 4*nleaf-4);
+P = zeros(3*nskel, 3*nleaf-3);
 P(leftSkel,  leftLeaf)  = B;
-P(rightSkel, rightLeaf) = B;
 P(downSkel,  downLeaf)  = B;
-P(upSkel,    upLeaf)    = B;
+P(hypotSkel, hypotLeaf) = B;
 
 end

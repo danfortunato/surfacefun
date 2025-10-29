@@ -50,8 +50,10 @@ classdef leaf < surfaceop.patch
     methods ( Static )
 
         % Initialize an array of LEAF objects.
-        P = initialize_DtN(op, dom, rhs);
-        P = initialize_ItI(op, dom, eta, rhs);
+        P = initialize_DtN_quad(op, dom, rhs);
+        P = initialize_DtN_tri(op, dom, rhs);
+        P = initialize_ItI_quad(op, dom, eta, rhs);
+        P = initialize_ItI_tri(op, dom, eta, rhs);
 
     end
 

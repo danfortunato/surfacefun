@@ -17,26 +17,38 @@ dom = P.domain;
 id = P.id;
 
 nrhs = size(rhs, 2);
-ii = false(n);
-ii(2:n-1,2:n-1) = true;
+numLeafNodes = numel(dom.x{id});
+switch ( dom.ptype(id) )
+    case 'quad'
+        ii = false(n);
+        ii(2:n-1,2:n-1) = true;
+    case 'tri'
+        eleft  = 1:n;
+        edown  = cumsum([1 (n:-1:2)]);
+        ehypot = cumsum([n (n-1:-1:1)]);
+        eeIdx = unique([eleft edown ehypot]);
+        ee = false(numLeafNodes, 1);
+        ee(eeIdx) = true;
+        ii = ~ee;
+end
 
 if ( iscell(rhs) && isa(rhs{1}, 'function_handle') )
     rhs = rhs{1};
 end
 
 if ( iscell(rhs) )
-    rhs = reshape([rhs{1,:}], n^2, nrhs);
+    rhs = reshape([rhs{1,:}], numLeafNodes, nrhs);
 end
 
 % Define scalar RHSs:
 if ( isnumeric(rhs) && isscalar(rhs) )
     % Constant RHS.
-    rhs = repmat(rhs, n^2, 1);
+    rhs = repmat(rhs, numLeafNodes, 1);
 elseif ( isnumeric(rhs) && ~isscalar(rhs) )
     % We already have the values of the RHS.
 elseif ( isa(rhs, 'function_handle') )
     rhs = feval(rhs, dom.x{id}, dom.y{id}, dom.z{id});
-    rhs = reshape(rhs, n^2, 1);
+    rhs = reshape(rhs, numLeafNodes, 1);
 end
 
 % Restrict to interior nodes.
@@ -52,7 +64,8 @@ if ( isempty(P.Ainv) )
     error('SURFACEOP:LEAF:updateRHS:operatorNotStored', ...
         'Discretized operator A was not stored. Cannot update RHS.');
 end
-P.u_part = P.Ainv([rhs ; zeros(4*n-4, nrhs)]);
+numBdyPts = sum(~ii(:));
+P.u_part = P.Ainv([rhs ; zeros(numBdyPts, nrhs)]);
 
 % Normal derivative:
 P.du_part = P.normal_d * P.u_part;
