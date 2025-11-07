@@ -58,7 +58,7 @@ classdef surfacemesh < handle
             dom.x = x;
             dom.y = y;
             dom.z = z;
-            dom.split = split;
+            dom.split = cellfun(@logical, split, 'UniformOutput', false);
 
             xu = cell(size(x)); xv = cell(size(x));
             yu = cell(size(x)); yv = cell(size(x));
