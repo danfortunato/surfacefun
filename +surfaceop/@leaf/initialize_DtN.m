@@ -205,7 +205,7 @@ for k = 1:numPatches
     % Construct normal derivative operator:
     normal_d = NN(:,1,k).*dx + NN(:,2,k).*dy + NN(:,3,k).*dz;
 
-    % Construct the D2N map and particular flux;
+    % Construct the D2N map and particular flux:
     D2N = normal_d * S;
     du_part = normal_d * u_part;
 

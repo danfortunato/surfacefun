@@ -6,6 +6,7 @@ classdef surfacemesh < handle
         x
         y
         z
+        split
 
     end
 
@@ -39,7 +40,7 @@ classdef surfacemesh < handle
 
     methods
 
-        function dom = surfacemesh(x, y, z)
+        function dom = surfacemesh(x, y, z, split)
 
             if ( nargin == 0 )
                 return
@@ -50,9 +51,14 @@ classdef surfacemesh < handle
                 error('X, Y, and Z must be cell arrays of the same size.');
             end
 
+            if ( nargin < 4 )
+                split = repmat({false(1, 4)}, [length(x) 1]);
+            end
+
             dom.x = x;
             dom.y = y;
             dom.z = z;
+            dom.split = split;
 
             xu = cell(size(x)); xv = cell(size(x));
             yu = cell(size(x)); yv = cell(size(x));
