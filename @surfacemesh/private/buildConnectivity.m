@@ -13,8 +13,7 @@ for k = 1:length(dom)
     nodes(j+(1:4),:) = [dom.x{k}(cidx) dom.y{k}(cidx) dom.z{k}(cidx)];
     j = j+4;
 end
-%[nodes, ~, elem2node] = unique(nodes, 'rows', 'stable');
-[nodes, ~, elem2node] = uniquetol(nodes, 'ByRows', true);
+[nodes, ~, elem2node] = uniquetol_stable(nodes, 'ByRows', true);
 
 % Element i has corner nodes elem2node(i,:)
 elem2node = reshape(elem2node, 4, length(dom)).';
@@ -31,14 +30,10 @@ end
 edges = zeros(4*length(dom), 2);
 j = 0;
 for k = 1:length(dom)
-    edges(j+1,:) = elem2node(k, [1 2]);
-    edges(j+2,:) = elem2node(k, [2 4]);
-    edges(j+3,:) = elem2node(k, [4 3]);
-    edges(j+4,:) = elem2node(k, [3 1]);
-%     edges(j+1,:) = elem2node(k, [1 2]);
-%     edges(j+2,:) = elem2node(k, [2 3]);
-%     edges(j+3,:) = elem2node(k, [3 4]);
-%     edges(j+4,:) = elem2node(k, [4 1]);
+    edges(j+1,:) = elem2node(k, [1 2]); % Left
+    edges(j+2,:) = elem2node(k, [3 4]); % Right
+    edges(j+3,:) = elem2node(k, [1 3]); % Down
+    edges(j+4,:) = elem2node(k, [2 4]); % Up
     j = j+4;
 end
 edges = sort(edges, 2);
@@ -81,5 +76,15 @@ connectivity.edges     = edges;
 connectivity.elem2edge = elem2edge;
 connectivity.edge2elem = edge2elem;
 connectivity.elem2elem = elem2elem;
+
+end
+
+function [c, ia, ic] = uniquetol_stable(a, varargin)
+
+[~, ia, ic] = uniquetol(a, varargin{:});
+[ia, ordered_ind] = sort(ia);
+invOrder(ordered_ind(:)) = 1:length(ordered_ind);
+ic = invOrder(ic).';
+c = a(ia,:);
 
 end
