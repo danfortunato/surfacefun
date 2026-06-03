@@ -65,6 +65,44 @@ The resulting fields are plotted below.
    :width: 650px
    :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    % A modest torus keeps the demo quick (the docs use a finer mesh).
+    p = 8;
+    nu = 8;
+    nv = 16;
+    dom = surfacemesh.torus(p + 1, nu, nv);
+
+    % A smooth random tangential vector field.
+    rng(0);
+    bb = boundingbox(dom);
+    gx = randnfun3(10, bb);
+    gy = randnfun3(10, bb);
+    gz = randnfun3(10, bb);
+    g = cross([0 1 1], surfacefunv(@(x, y, z) gx(x, y, z), ...
+                                   @(x, y, z) gy(x, y, z), ...
+                                   @(x, y, z) gz(x, y, z), dom));
+    vn = normal(dom);
+    f = -cross(vn, vn, g);   % project g onto the tangent plane
+
+    % Hodge decomposition: f = grad(u) + n x grad(v) + w.
+    [u, v, w] = hodge(f);
+
+    subplot(2, 2, 1), quiver(f, 0.3, 4), title('Tangential field f')
+    subplot(2, 2, 2), quiver(grad(u), 0.3, 4), title('Curl-free grad(u)')
+    subplot(2, 2, 3), quiver(cross(vn, grad(v)), 0.3, 4), title('Div-free n x grad(v)')
+    subplot(2, 2, 4), quiver(w, 0.3, 4), title('Harmonic w')
+
+    fprintf('|| div(w) ||              = %.3e\n', norm(div(w)));
+    fprintf('|| div(n x w) ||          = %.3e\n', norm(div(cross(vn, w))));
+    </script>
+    </numbl-embed>
+
 Let's check how numerically harmonic the resulting :math:`\boldsymbol{w}` field
 is:
 

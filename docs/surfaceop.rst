@@ -111,6 +111,40 @@ Now we can solve the PDE:
         :width: 400px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.sphere(p + 1, nref);
+
+    % Exact solution: spherical harmonic Y_lm, an eigenfunction of the
+    % Laplace-Beltrami operator with eigenvalue -l(l+1).
+    l = 3;
+    m = 2;
+    sol = spherefun.sphharm(l, m);
+    sol = surfacefun(@(x, y, z) sol(x, y, z), dom);
+    f = -l*(l + 1)*sol;
+
+    pdo = [];
+    pdo.lap = 1;
+
+    L = surfaceop(dom, pdo, f);
+    L.rankdef = true;   % closed-surface problem: impose mean-zero
+    u = L.solve();
+
+    figure(1);
+    plot(u), colorbar
+    title('Laplace-Beltrami solution on the sphere');
+
+    fprintf('error || u - sol || = %.3e\n', norm(u - sol));
+    </script>
+    </numbl-embed>
+
 Let's check the error:
 
 .. code-block:: matlab
@@ -153,6 +187,33 @@ equation on a genus-1 stellarator geometry:
         :width: 450px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    p = 16;
+    nu = 8;
+    nv = 24;
+    dom = surfacemesh.stellarator(p + 1, nu, nv);
+
+    % Laplacian plus a spatially varying zeroth-order term c(x,y,z).
+    pdo = [];
+    pdo.lap = 1;
+    pdo.c = @(x, y, z) 300*(1 - z);
+
+    f = -1;
+    L = surfaceop(dom, pdo, f);
+    u = L.solve();
+
+    figure(1);
+    plot(u), colorbar
+    title('Variable-coefficient Helmholtz on a stellarator');
+    </script>
+    </numbl-embed>
+
 Now let's solve a problem on an open surface. We'll create an open surface by
 extracting a subset of the patches from a closed surface:
 
@@ -170,6 +231,26 @@ extracting a subset of the patches from a closed surface:
     .. figure:: images/open_surface.png
         :width: 250px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    % Build an open surface by keeping a subset of a blob's patches.
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+    dom = surfacemesh(dom.x(1:16), dom.y(1:16), dom.z(1:16));
+
+    figure(1);
+    plot(dom), view(-110, 30), camlight
+    title('Open surface (subset of a blob)');
+    </script>
+    </numbl-embed>
 
 We construct a ``surfaceop`` on an open surface in the same way as on a closed
 surface, except now the ``L.solve()`` method requires Dirichlet boundary data to
@@ -193,6 +274,31 @@ be passed as an argument:
     .. figure:: images/open_sol.png
         :width: 375px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+    dom = surfacemesh(dom.x(1:16), dom.y(1:16), dom.z(1:16));
+
+    % Solve Delta_Gamma u = -1 with zero Dirichlet data on the boundary.
+    pdo = [];
+    pdo.lap = 1;
+    L = surfaceop(dom, pdo, -1);
+    u = L.solve(0);
+
+    figure(1);
+    plot(u), view(-110, 30), colorbar
+    title('rhs = -1, u = 0 on boundary');
+    </script>
+    </numbl-embed>
 
 Modifying an existing ``surfaceop``
 -----------------------------------
@@ -242,3 +348,36 @@ it to ``L.solve()``:
     .. figure:: images/open_sol3.png
         :width: 375px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example (factorize once, reuse)">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="matlab-script">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+    dom = surfacemesh(dom.x(1:16), dom.y(1:16), dom.z(1:16));
+
+    % Factorize once, then reuse for several boundary conditions.
+    pdo = [];
+    pdo.lap = 1;
+    L = surfaceop(dom, pdo);
+    L.build();
+
+    L.rhs = @(x, y, z) sin(x .* y);
+    u1 = L.solve(0);            % zero Dirichlet data
+    u2 = L.solve(@(x, y, z) z); % same factorization, u = z on the boundary
+
+    subplot(1, 2, 1)
+    plot(u1), view(-110, 30), colorbar
+    title('u = 0 on boundary');
+
+    subplot(1, 2, 2)
+    plot(u2), view(-110, 30), colorbar
+    title('u = z on boundary');
+    </script>
+    </numbl-embed>

@@ -76,4 +76,8 @@ html_static_path = ['_static']
 
 html_css_files = ['css/custom.css']
 
+# numbl-embed.js defines the <numbl-embed> custom element used to turn the
+# example snippets into editable, runnable widgets (see surfacefun.rst).
+html_js_files = ['js/numbl-embed.js']
+
 html_logo = 'images/cow_spots.png'
