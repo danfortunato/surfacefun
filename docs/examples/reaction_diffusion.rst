@@ -89,11 +89,12 @@ shown below.
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     % Complex Ginzburg-Landau, integrated with a semi-implicit (backward-Euler)
     % scheme. The diffusion operator is time-independent, so one surfaceop
     % factorization is reused at every step. Sphere + short run to stay quick.

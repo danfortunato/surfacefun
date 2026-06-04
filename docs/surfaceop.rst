@@ -113,11 +113,12 @@ Now we can solve the PDE:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nref = 2;
     dom = surfacemesh.sphere(p + 1, nref);
@@ -189,11 +190,12 @@ equation on a genus-1 stellarator geometry:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nu = 8;
     nv = 24;
@@ -234,11 +236,12 @@ extracting a subset of the patches from a closed surface:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     % Build an open surface by keeping a subset of a blob's patches.
     rng(0);
     p = 16;
@@ -277,11 +280,12 @@ be passed as an argument:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -351,11 +355,12 @@ it to ``L.solve()``:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example (factorize once, reuse)">
+    <numbl-embed lazy label="▶ Edit &amp; run this example (factorize once, reuse)" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;

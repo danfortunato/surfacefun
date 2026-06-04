@@ -67,11 +67,12 @@ The resulting fields are plotted below.
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     % A modest torus keeps the demo quick (the docs use a finer mesh).
     p = 8;
     nu = 8;

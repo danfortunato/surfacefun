@@ -51,11 +51,12 @@ Let's plot the function:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -85,11 +86,12 @@ Many standard MATLAB arithmetic functions have been overloaded.
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -121,11 +123,12 @@ We can also visualize a ``surfacefun`` using a contour plot:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 8;
     nref = 0;
@@ -159,11 +162,12 @@ For example:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -196,11 +200,12 @@ operator---applied to our function:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -284,11 +289,12 @@ Other norms are implemented as well. The :math:`L^\infty` norm is computed via:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example (integral, mean, norms)">
+    <numbl-embed lazy label="▶ Edit &amp; run this example (integral, mean, norms)" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -326,11 +332,12 @@ vectors per patch and scale their lengths by 0.2:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -377,11 +384,12 @@ The gradient is tangent to the surface, as we can see from a quiver plot:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -430,11 +438,12 @@ via the surface divergence:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;
@@ -465,11 +474,12 @@ We can also take the surface curl of a ``surfacefunv``:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     rng(0);
     p = 16;
     nref = 2;

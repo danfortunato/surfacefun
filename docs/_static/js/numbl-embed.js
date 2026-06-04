@@ -5,14 +5,37 @@ Usage:
 <numbl-embed>
 <iframe width="100%" height="500" frameborder="0"></iframe>
 
-<script type="text/plain" class="matlab-script">
-... MATLAB script ...
+<script type="text/plain" class="numbl-script">
+... numbl script ...
 </script>
 
 </numbl-embed>
 
-You can also specify the MATLAB script URL via attribute:
-<numbl-embed script="relative-or-absolute-url-to-matlab-script">
+Optional preamble: setup code that runs before the visible script on every Run
+(e.g. installing a package with `mip load --install ...`). It is kept out of the
+editor, and its console output is hidden behind a "Preparing…" message unless it
+errors — in which case the output and error are shown. Override that message
+per-embed with the `preparing-label` attribute (e.g. "Installing…").
+
+<numbl-embed preparing-label="Installing…">
+<iframe width="100%" height="500" frameborder="0"></iframe>
+
+<script type="text/plain" class="numbl-preamble">
+mip load --install owner/repo/package
+</script>
+
+<script type="text/plain" class="numbl-script">
+... numbl script ...
+</script>
+
+</numbl-embed>
+
+The classes `matlab-script` / `matlab-preamble` are accepted as synonyms for
+`numbl-script` / `numbl-preamble` (backward compatibility with older embeds).
+
+You can also specify the script URL via attribute (a `numbl-preamble` block still
+applies):
+<numbl-embed script="relative-or-absolute-url-to-script">
 <iframe width="100%" height="500" frameborder="0"></iframe>
 </numbl-embed>
 
@@ -123,28 +146,47 @@ class NumblEmbed extends HTMLElement {
       return utf8ToBase64(text2);
     };
 
-    const scriptElement = this.querySelector("script.matlab-script");
+    // Optional preamble: setup code that runs (hidden) before the visible
+    // script. `numbl-preamble` is preferred; `matlab-preamble` is a synonym.
+    const preambleElement = this.querySelector(
+      "script.numbl-preamble, script.matlab-preamble"
+    );
+    let preambleParam = preambleElement
+      ? `&preamble=${encodePlain(preambleElement.textContent.trim())}`
+      : "";
+
+    // Message shown while the preamble runs (defaults to "Preparing..." in the
+    // embed page). Override per-embed with the `preparing-label` attribute,
+    // e.g. preparing-label="Installing...".
+    const preparingLabel = this.getAttribute("preparing-label");
+    if (preambleParam && preparingLabel) {
+      preambleParam += `&preparing=${utf8ToBase64(preparingLabel)}`;
+    }
+
+    // `numbl-script` is preferred; `matlab-script` is a synonym.
+    const scriptElement = this.querySelector(
+      "script.numbl-script, script.matlab-script"
+    );
 
     let scriptBase64;
     if (scriptElement) {
-      const matlabScript = scriptElement.textContent.trim();
-      scriptBase64 = encodePlain(matlabScript);
+      scriptBase64 = encodePlain(scriptElement.textContent.trim());
     } else if (this.attributes.script) {
       const scriptUrl = this.attributes.script.value;
-      this.loadScriptFromUrl(scriptUrl);
+      this.loadScriptFromUrl(scriptUrl, preambleParam);
       return;
     } else {
       scriptBase64 = null;
     }
 
     if (scriptBase64) {
-      this.iframe.src = `${numblUrl}/embed?script=${scriptBase64}&${cacheBust}`;
+      this.iframe.src = `${numblUrl}/embed?script=${scriptBase64}${preambleParam}&${cacheBust}`;
     } else {
-      this.iframe.src = `${numblUrl}/embed?${cacheBust}`;
+      this.iframe.src = `${numblUrl}/embed?${cacheBust}${preambleParam}`;
     }
   }
 
-  async loadScriptFromUrl(url) {
+  async loadScriptFromUrl(url, preambleParam = "") {
     try {
       let absoluteUrl = url;
       if (url.startsWith("./") || url.startsWith("../")) {
@@ -164,9 +206,9 @@ class NumblEmbed extends HTMLElement {
       const numblUrl = this.attributes["numbl-url"]?.value || defaultNumblUrl;
 
       const cacheBust = `_cb=${Date.now()}`;
-      this.iframe.src = `${numblUrl}/embed?script=${scriptBase64}&${cacheBust}`;
+      this.iframe.src = `${numblUrl}/embed?script=${scriptBase64}${preambleParam}&${cacheBust}`;
     } catch (error) {
-      console.error("Error loading MATLAB script:", error);
+      console.error("Error loading script:", error);
       this.iframe.srcdoc = `
         <html>
           <body style="font-family: Arial; padding: 20px;">

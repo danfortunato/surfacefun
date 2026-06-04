@@ -45,11 +45,12 @@ and plot them:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     n = 16;
     [u, v] = chebpts2(n);
 
@@ -80,11 +81,12 @@ MATLAB cell array whose length is equal to the number of patches in the mesh:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     n = 16;
     [u, v] = chebpts2(n);
 
@@ -161,11 +163,12 @@ and map them to the graph of a given function.
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     n = 16;
     [u, v] = chebpts2(n);
 
@@ -240,11 +243,12 @@ which consists of a cube mesh that has been inflated to live on the sphere:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nref = 2;
     dom = surfacemesh.sphere(p + 1, nref);
@@ -275,11 +279,12 @@ routine:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nref = 2;
     rng(0);
@@ -310,11 +315,12 @@ randomness of the algorithm:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nref = 2;
 
@@ -344,11 +350,12 @@ Surface meshes of any genus are supported. Here is a smoothly deformed torus:
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nu = 8;
     nv = 24;
@@ -376,11 +383,12 @@ The mesh does not even have to be smooth between patches...
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nu = 4;
     nv = 32;
@@ -408,11 +416,12 @@ The mesh does not even have to be smooth between patches...
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example">
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nu = 30;
     nv = 7;
@@ -467,11 +476,12 @@ Visualizing a mesh
 
   .. raw:: html
 
-      <numbl-embed lazy label="▶ Edit &amp; run this example">
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
       <iframe width="100%" height="560" frameborder="0"></iframe>
-      <script type="text/plain" class="matlab-script">
+      <script type="text/plain" class="numbl-preamble">
       mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+      </script>
+      <script type="text/plain" class="numbl-script">
       p = 16;
       nref = 1;
       dom = surfacemesh.sphere(p + 1, nref);
@@ -496,11 +506,12 @@ Visualizing a mesh
 
   .. raw:: html
 
-      <numbl-embed lazy label="▶ Edit &amp; run this example">
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
       <iframe width="100%" height="560" frameborder="0"></iframe>
-      <script type="text/plain" class="matlab-script">
+      <script type="text/plain" class="numbl-preamble">
       mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+      </script>
+      <script type="text/plain" class="numbl-script">
       p = 16;
       nref = 1;
       dom = surfacemesh.sphere(p + 1, nref);
@@ -614,11 +625,12 @@ Querying a mesh
 
 .. raw:: html
 
-    <numbl-embed lazy label="▶ Edit &amp; run this example (mesh queries)">
+    <numbl-embed lazy label="▶ Edit &amp; run this example (mesh queries)" preparing-label="Installing surfacefun…">
     <iframe width="100%" height="560" frameborder="0"></iframe>
-    <script type="text/plain" class="matlab-script">
+    <script type="text/plain" class="numbl-preamble">
     mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+    </script>
+    <script type="text/plain" class="numbl-script">
     p = 16;
     nref = 2;
     dom = surfacemesh.sphere(p + 1, nref);
@@ -659,11 +671,12 @@ patch ("p-refinement") or by the changing the number of patches
 
   .. raw:: html
 
-      <numbl-embed lazy label="▶ Edit &amp; run this example">
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
       <iframe width="100%" height="560" frameborder="0"></iframe>
-      <script type="text/plain" class="matlab-script">
+      <script type="text/plain" class="numbl-preamble">
       mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+      </script>
+      <script type="text/plain" class="numbl-script">
       p = 16;
       nref = 2;
       dom = surfacemesh.sphere(p + 1, nref);
@@ -691,11 +704,12 @@ patch ("p-refinement") or by the changing the number of patches
 
   .. raw:: html
 
-      <numbl-embed lazy label="▶ Edit &amp; run this example">
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
       <iframe width="100%" height="560" frameborder="0"></iframe>
-      <script type="text/plain" class="matlab-script">
+      <script type="text/plain" class="numbl-preamble">
       mip load --install flatironinstitute/flatironinstitute/surfacefun
-
+      </script>
+      <script type="text/plain" class="numbl-script">
       p = 16;
       nref = 2;
       dom = surfacemesh.sphere(p + 1, nref);
