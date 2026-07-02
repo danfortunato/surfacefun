@@ -3,6 +3,29 @@ Installation
 
 To install the Surfacefun MATLAB package, follow these steps.
 
+Install with `mip <https://mip.sh>`_ (recommended)
+--------------------------------------------------
+
+The recommended way to install Surfacefun in MATLAB is via the `mip <https://mip.sh>`_
+package manager:
+
+.. code-block:: matlabsession
+
+   >> mip install surfacefun
+
+To use it in your current MATLAB session, run:
+
+.. code-block:: matlabsession
+
+   >> mip load surfacefun
+
+This will automatically add Surfacefun to your MATLAB path.
+
+Manual installation
+-------------------
+
+Alternatively, you can install Surfacefun manually by following these steps.
+
 1. In a terminal, clone the source repository from GitHub:
 
    .. code-block:: console
