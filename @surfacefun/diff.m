@@ -47,28 +47,47 @@ nx = n(1);
 ny = n(2);
 nz = n(3);
 
-[nv, nu] = size(f(1).vals{1});
-Du = diffmat(nu);
-Dv = diffmat(nv);
+dom = f(1).domain;
+if ( ~all(dom.ptype == dom.ptype(1)) )
+    error('Heterogeneous patch types are not yet supported.');
+end
+
+switch ( dom.ptype(1) )
+    case 'tri'
+        [K, Ku, Kv] = koornwinder(order(dom));
+        Du = Ku / K;
+        Dv = Kv / K;
+        du = @(x) Du * x;
+        dv = @(x) Dv * x;
+    case 'quad'
+        %[nv, nu] = size(f(1).vals{1});
+        [nu, nv] = size(dom);
+        Du = diffmat(nu);
+        Dv = diffmat(nv);
+        du = @(x) x * Du.';
+        dv = @(x) Dv * x;
+end
 
 % TODO: This can be vectorized across multiple functions.
 nf = builtin('numel', f);
 for j = 1:nf
     for k = 1:length(f(j))
         vals = f(j).vals{k};
-        for m = 1:nx, vals = mappedVDiff(vals, f(j).domain, k, 1, Du, Dv); end
-        for m = 1:ny, vals = mappedVDiff(vals, f(j).domain, k, 2, Du, Dv); end
-        for m = 1:nz, vals = mappedVDiff(vals, f(j).domain, k, 3, Du, Dv); end
+        for m = 1:nx, vals = mappedVDiff(vals, f(j).domain, k, 1, du, dv); end
+        for m = 1:ny, vals = mappedVDiff(vals, f(j).domain, k, 2, du, dv); end
+        for m = 1:nz, vals = mappedVDiff(vals, f(j).domain, k, 3, du, dv); end
         f(j).vals{k} = vals;
     end
 end
 
 end
 
-function f = mappedVDiff(f, dom, k, dim, Du, Dv)
+function f = mappedVDiff(f, dom, k, dim, du, dv)
 
-    dfdu = f * Du.';
-    dfdv = Dv * f;
+    dfdu = du(f);
+    dfdv = dv(f);
+    %dfdu = f * Du.';
+    %dfdv = Dv * f;
 
     % Get Jacobian factors for the specified dimension
     if ( dim == 1 )
@@ -81,7 +100,7 @@ function f = mappedVDiff(f, dom, k, dim, Du, Dv)
         du = dom.uz{k};
         dv = dom.vz{k};
     else
-        error('SURFACEFUN:mappedDiff:dim', 'Dimension should be either 1 or 2.');
+        error('SURFACEFUN:mappedVDiff:dim', 'Dimension should be either 1 or 2.');
     end
 
     % Compute df/dx = (du/dx) df/du + (dv/dx) df/dv

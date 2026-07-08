@@ -32,9 +32,9 @@ idx1 = cat(1, P.idx1{:}); % idx1 = cell2mat(P.idx1.');
 idx2 = cat(1, P.idx2{:}); % idx2 = cell2mat(P.idx2.');
 
 % Assemble boundary conditions for child patches:
-ubc1 = ones(size(P.child1.S, 2)-1, size(P.u_part, 2));
+ubc1 = ones(size(P.child1.S, 2), size(P.u_part, 2));
 ubc1(idx1,:) = [bc(i1,:) ; P.flip1.'*u];
-ubc2 = ones(size(P.child2.S, 2)-1, size(P.u_part, 2));
+ubc2 = ones(size(P.child2.S, 2), size(P.u_part, 2));
 ubc2(idx2,:) = [bc(i2,:) ; P.flip2.'*u];
 
 % Solve for the child patches:

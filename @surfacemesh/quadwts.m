@@ -11,15 +11,29 @@ if ( isempty(dom) )
     return
 end
 
+if ( ~all(dom.ptype == dom.ptype(1)) )
+    error('Heterogeneous patch types are not yet supported.');
+end
+
 % If a patch uses an N x N discretization, then quadrature is performed on
 % that patch using N points.
 nelem = length(dom);
-[nv, nu] = size(dom.x{1});
-wu = chebtech2.quadwts(nu); wu = wu(:);
-wv = chebtech2.quadwts(nv); wv = wv(:);
-W = zeros(nv, nu, nelem);
+switch ( dom.ptype(1) )
+    case 'tri'
+        npts = length(dom.x{1});
+        n = (sqrt(8*npts+1)-1) / 2;
+        [~, ~, ww] = trianglepts(n);
+        W = zeros(npts, 1, nelem);
+    case 'quad'
+        [nv, nu] = size(dom.x{1});
+        wu = chebtech2.quadwts(nu); wu = wu(:);
+        wv = chebtech2.quadwts(nv); wv = wv(:);
+        ww = wv .* wu.';
+        W = zeros(nv, nu, nelem);
+end
+
 for k = 1:nelem
-    W(:,:,k) = wv .* wu.' .* sqrt(dom.J{k});
+    W(:,:,k) = ww .* sqrt(dom.J{k});
 end
 
 end

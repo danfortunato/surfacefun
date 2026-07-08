@@ -6,6 +6,7 @@ classdef surfacemesh < handle
         x
         y
         z
+        ptype
 
     end
 
@@ -35,11 +36,15 @@ classdef surfacemesh < handle
         edgenormals
         connectivity
 
+        basis
+        coeffs2vals
+        vals2coeffs
+
     end
 
     methods
 
-        function dom = surfacemesh(x, y, z)
+        function dom = surfacemesh(x, y, z, ptype)
 
             if ( nargin == 0 )
                 return
@@ -50,9 +55,17 @@ classdef surfacemesh < handle
                 error('X, Y, and Z must be cell arrays of the same size.');
             end
 
+            if ( nargin < 4 )
+                ptype = surfacemesh.patchtype.quad;
+            end
+
             dom.x = x;
             dom.y = y;
             dom.z = z;
+            dom.ptype = surfacemesh.patchtype(ptype);
+            if ( length(dom.ptype) == 1 ) %#ok<ISCL>
+                dom.ptype = repmat(dom.ptype, length(x), 1);
+            end
 
             xu = cell(size(x)); xv = cell(size(x));
             yu = cell(size(x)); yv = cell(size(x));
@@ -64,19 +77,46 @@ classdef surfacemesh < handle
             F = cell(size(x));
             G = cell(size(x));
             J = cell(size(x));
-
-            n = size(x{1}, 1);
-            D = diffmat(n);
             singular = false(size(x));
+
+            idx = find(dom.ptype == 'tri');
+            if ( any(idx) )
+                npts = length(x{idx(1)});
+                n = (sqrt(8*npts+1) - 1) / 2;
+                [xx, yy] = trianglepts(n);
+                [K, Du, Dv] = koornwinder(n-1, xx, yy);
+                Du = Du / K;
+                Dv = Dv / K;
+                for k = idx(:).'
+                    xu{k} = Du * x{k}; xv{k} = Dv * x{k};
+                    yu{k} = Du * y{k}; yv{k} = Dv * y{k};
+                    zu{k} = Du * z{k}; zv{k} = Dv * z{k};
+                end
+                V = inv(K);
+                dom.coeffs2vals = @(cfs) K*cfs;
+                dom.vals2coeffs = @(vals) V*vals; %#ok<MINV>
+                dom.basis = @(x,y) koornwinder(n-1, x, y);
+            end
+
+            idx = find(dom.ptype == 'quad');
+            if ( any(idx) )
+                n = size(x{idx(1)}, 1);
+                D = diffmat(n);
+                for k = idx(:).'
+                    xu{k} = x{k} * D.'; xv{k} = D * x{k};
+                    yu{k} = y{k} * D.'; yv{k} = D * y{k};
+                    zu{k} = z{k} * D.'; zv{k} = D * z{k};
+                end
+                dom.coeffs2vals = @(cfs) chebtech2.coeffs2vals(chebtech2.coeffs2vals(cfs).').';
+                dom.vals2coeffs = @(vals) chebtech2.vals2coeffs(chebtech2.vals2coeffs(vals).').';
+                dom.basis = @(x,y) koornwinder(n-1, x, y);
+            end
+
             for k = 1:length(x)
-                xu{k} = x{k} * D.'; xv{k} = D * x{k};
-                yu{k} = y{k} * D.'; yv{k} = D * y{k};
-                zu{k} = z{k} * D.'; zv{k} = D * z{k};
                 E{k} = xu{k}.*xu{k} + yu{k}.*yu{k} + zu{k}.*zu{k};
                 G{k} = xv{k}.*xv{k} + yv{k}.*yv{k} + zv{k}.*zv{k};
                 F{k} = xu{k}.*xv{k} + yu{k}.*yv{k} + zu{k}.*zv{k};
                 J{k} = E{k}.*G{k} - F{k}.^2;
-
                 scl = max(abs(G{k}.*xu{k}-F{k}.*xv{k}), [], 'all');
                 if ( any(abs(J{k}) < 1e-10*scl, 'all') )
                     singular(k) = true;
@@ -123,6 +163,7 @@ classdef surfacemesh < handle
     methods ( Static )
 
         dom = sphere(varargin);
+        dom = icosphere(varargin);
         dom = ellipsoid(varargin);
         dom = hemisphere(varargin);
         dom = blob(varargin);

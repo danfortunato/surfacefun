@@ -29,18 +29,12 @@ dom = NaN;
 edgesA = a.edges;
 edgesB = b.edges;
 
-sclx = 0;
-scly = 0;
-sclz = 0;
-for k = 1:4
-    sclx = max(sclx, abs(edgesA(k,4) - edgesA(k,1)));
-    sclx = max(sclx, abs(edgesB(k,4) - edgesB(k,1)));
-    scly = max(scly, abs(edgesA(k,5) - edgesA(k,2)));
-    scly = max(scly, abs(edgesB(k,5) - edgesB(k,2)));
-    sclz = max(sclz, abs(edgesA(k,6) - edgesA(k,3)));
-    sclz = max(sclz, abs(edgesB(k,6) - edgesB(k,3)));
-end
-scl = max([sclx scly sclz]);
+scl = max([ abs(edgesA(:,4) - edgesA(:,1)) ;
+            abs(edgesA(:,5) - edgesA(:,2)) ;
+            abs(edgesA(:,6) - edgesA(:,3)) ;
+            abs(edgesB(:,4) - edgesB(:,1)) ;
+            abs(edgesB(:,5) - edgesB(:,2)) ;
+            abs(edgesB(:,6) - edgesB(:,3)) ]);
 
 % Check for intersecting edges (with a tolerance):
 tol = 1e-8 * scl;

@@ -27,19 +27,18 @@ end
 I = zeros(length(f), size(f, 2));
 sz1 = cellfun(@(x) size(x,1), f(:,1).vals);
 sz2 = cellfun(@(x) size(x,2), f(:,1).vals);
-if ( all(sz1 == sz1(1)) && all(sz2 == sz2(2)) )
-    % All elements can use the same quadrature weights
-    [nv, nu] = size(f(:,1).vals{1});
-    wu = chebtech2.quadwts(nu); wu = wu(:);
-    wv = chebtech2.quadwts(nv); wv = wv(:);
-    ww = wv .* wu.';
+if ( all(sz1 == sz1(1)) && all(sz2 == sz2(1)) )
+    % All elements are the same order, so they can share quadrature weights.
+    % QUADWTS handles both triangle and quad patches and already includes
+    % the square root of the Jacobian on each element.
+    W = quadwts(f(:,1).domain);
     for k = 1:size(f, 2)
         for j = 1:length(f(:,k))
-            I(j,k) = sum(sum(f(:,k).vals{j} .* ww .* sqrt(f(:,k).domain.J{j})));
+            I(j,k) = sum(f(:,k).vals{j} .* W(:,:,j), 'all');
         end
     end
 else
-    % Elements need different quadrature weights
+    % Elements need different quadrature weights.
     for k = 1:size(f, 2)
         for j = 1:length(f(:,k))
             [nv, nu] = size(f(:,k).vals{j});

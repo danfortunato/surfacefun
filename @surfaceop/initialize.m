@@ -17,9 +17,19 @@ function initialize(S, varargin)
 % Initialize all leaf patches:
 switch S.method
     case 'DtN'
-        S.patches = surfaceop.leaf.initialize_DtN(S.op, S.domain, varargin{:});
+        switch ( S.domain.ptype(1) )
+            case 'tri'
+                S.patches = surfaceop.leaf.initialize_DtN_tri(S.op, S.domain, varargin{:});
+            case 'quad'
+                S.patches = surfaceop.leaf.initialize_DtN_quad(S.op, S.domain, varargin{:});
+        end
     case 'ItI'
-        S.patches = surfaceop.leaf.initialize_ItI(S.op, S.domain, S.eta, varargin{:});
+        switch ( S.domain.ptype(1) )
+            case 'tri'
+                S.patches = surfaceop.leaf.initialize_ItI_tri(S.op, S.domain, S.eta, varargin{:});
+            case 'quad'
+                S.patches = surfaceop.leaf.initialize_ItI_quad(S.op, S.domain, S.eta, varargin{:});
+        end
 end
 
 end

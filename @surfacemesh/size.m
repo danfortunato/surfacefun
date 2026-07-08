@@ -1,9 +1,9 @@
-function [pu, pv] = order(dom)
-%ORDER   Order of a SURFACEMESH.
+function [nu, nv] = size(dom)
+%SIZE   Size of a SURFACEMESH.
 
 if ( isempty(dom) )
-    pu = [];
-    pv = [];
+    nu = [];
+    nv = [];
     return
 end
 
@@ -13,14 +13,10 @@ end
 
 switch ( dom.ptype(1) )
     case 'tri'
-        npts = length(dom.x{1});
-        n = (sqrt(8*npts+1)-1) / 2;
-        pu = n-1;
-        pv = n-1;
+        nu = 1;
+        nv = length(dom.x{1});
     case 'quad'
         [nv, nu] = size(dom.x{1});
-        pu = nu-1;
-        pv = nv-1;
 end
 
 end

@@ -11,16 +11,18 @@ function f = subsasgn(f, index, val)
 switch index(1).type
     case '.'
         if ( strcmpi(index(1).subs, 'vec') )
-            n = order(f(1).domain) + 1;
+            [nu, nv] = size(f(1).domain);
+            npts = nu*nv;
             numPatches = length(f(1).domain);
+            numDOF = numel(f(1));
             numFuns = size(f, 2);
-            if ( ~all(size(val) == [n^2*numPatches numFuns]) )
+            if ( ~all(size(val) == [numDOF numFuns]) )
                 error('SURFACEFUN:subsasgn:dimensions', ...
                     'Data and surfacefun dimensions are incompatible.');
             end
             for j = 1:numFuns
                 for k = 1:numPatches
-                    f(:,j).vals{k}(:) = val((k-1)*n^2+(1:n^2), j);
+                    f(:,j).vals{k}(:) = val((k-1)*npts+(1:npts), j);
                 end
             end
         else

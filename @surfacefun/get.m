@@ -5,6 +5,7 @@ function val = get(f, prop)
 %
 %      'DOMAIN'
 %      'VALS'
+%      'VEC'
 %
 %   See also SUBSREF.
 
