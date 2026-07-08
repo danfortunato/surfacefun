@@ -10,6 +10,6 @@ if ( isempty(f) )
 end
 
 fc = f.components;
-normF = sqrt(fc{1}.^2 + fc{2}.^2 + fc{3}.^2);
+normF = sqrt(abs(fc{1}).^2 + abs(fc{2}).^2 + abs(fc{3}).^2);
 
 end
