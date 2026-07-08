@@ -5,22 +5,28 @@ parser = inputParser;
 parser.KeepUnmatched = true;
 parser.addParameter('surface', 'auto', @(s) contains(lower(s), {'auto', 'on', 'off'}));
 parser.addParameter('edges',   'auto', @(s) contains(lower(s), {'auto', 'on', 'off'}));
+parser.addParameter('FaceColor', 'w');
 parse(parser, varargin{:});
 showSurface = parser.Results.surface;
 showEdges   = parser.Results.edges;
+faceColor   = parser.Results.FaceColor;
 varargin = namedargs2cell(parser.Unmatched);
 
 defaultStyle = {'Color',     'k', ...
                 'LineStyle', '-', ...
                 'LineWidth',  1};
 
-surfaceStyle = {'FaceColor',        'w',     ...
-                'EdgeColor',        'none',  ...
+surfaceStyle = {'EdgeColor',        'none',  ...
                 'AmbientStrength',   0.6,    ...
                 'DiffuseStrength',   0.4,    ...
                 'SpecularStrength',  0.3 };
 
+% A single color (applied to every element) or one RGB color per element may
+% be given.
+perElement = isnumeric(faceColor) && all(size(faceColor) == [length(dom) 3]);
+
 holdState = ishold();
+if ( ~holdState ), cla('reset'), end
 
 vn = dom.facenormals;
 ne = length(dom);
@@ -61,10 +67,19 @@ if ( all(dom.ptype == 'tri') )
         z_all = z(:) - scl*vn_all(:,3);
 
         hold on
-        patch('Faces',    T_all,               ...
-              'Vertices', [x_all y_all z_all], ...
-              'FaceVertexCData', 0*x_all,      ...
-              surfaceStyle{:});
+        if ( perElement )
+            % One color per element, repeated across its sub-triangles.
+            patch('Faces',           T_all,                     ...
+                  'Vertices',        [x_all y_all z_all],       ...
+                  'FaceVertexCData', repelem(faceColor, ntri, 1), ...
+                  'FaceColor',       'flat',                    ...
+                  surfaceStyle{:});
+        else
+            patch('Faces',    T_all,               ...
+                  'Vertices', [x_all y_all z_all], ...
+                  'FaceColor', faceColor,          ...
+                  surfaceStyle{:});
+        end
     end
 
 elseif ( all(dom.ptype == 'quad') )
@@ -86,12 +101,18 @@ elseif ( all(dom.ptype == 'quad') )
     if ( (~holdState && strcmpi(showSurface, 'auto')) || strcmpi(showSurface, 'on') )
         % Plot the surface, making it slightly smaller so lines show up
         % more clearly.
+        if ( perElement )
+            color = @(k) faceColor(k,:);
+        else
+            color = @(k) faceColor;
+        end
         hold on
         for k = 1:ne
             surface(dom.x{k} - scl*vn{k}(:,:,1), ...
                     dom.y{k} - scl*vn{k}(:,:,2), ...
                     dom.z{k} - scl*vn{k}(:,:,3), ...
                     0*dom.x{k},                  ...
+                    'FaceColor', color(k),       ...
                     surfaceStyle{:});
         end
     end

@@ -40,7 +40,7 @@ if ( rankdef && isempty(i1) && isempty(i2) )
 end
 
 % Store the decomposition for reuse in updateRHS():
-dA = decomposition(A);
+dA = decomposition(A, 'CheckCondition', false);
 S = dA \ z;
 u_part = dA \ z_part;
 

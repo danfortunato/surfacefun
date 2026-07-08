@@ -46,8 +46,8 @@ Many standard MATLAB arithmetic functions have been overloaded.
 .. code-block:: matlab
 
     x = surfacefun(@(x,y,z) x, dom);
-    g = abs(f + 10*x);
-    plot(g)
+    g = abs(f + 2*x);
+    plot(g), colorbar
 
 .. container:: output-image
 
@@ -91,7 +91,7 @@ operator---applied to our function:
 
 .. code-block:: matlab
 
-    plot(lap(f))
+    plot(lap(f)), colorbar
 
 .. container:: output-image
 
@@ -236,7 +236,7 @@ Laplacian:
               0
         </pre>
 
-The mean curvature of a surface can be related its the normal vector field
+The mean curvature of a surface can be related to its the normal vector field
 via the surface divergence:
 
 .. code-block:: matlab
@@ -254,8 +254,9 @@ We can also take the surface curl of a ``surfacefunv``:
 .. code-block:: matlab
 
     v = surfacefunv(@(x,y,z) cos(2*x), ...
-                    @(x,y,z) sin(4*y,  ...
+                    @(x,y,z) sin(4*y), ...
                     @(x,y,z) sin(3*z), dom);
+    quiver(curl(v), 0.1, 6)
 
 .. container:: output-image
 

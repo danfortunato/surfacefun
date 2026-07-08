@@ -32,6 +32,7 @@ args = [argnames(:).' ; argvals(:).'];
 varargin = args(:).';
 
 holdState = ishold();
+if ( ~holdState ), cla('reset'), end
 
 if ( ~all(f.domain.ptype == f.domain.ptype(1)) )
     error('Heterogeneous patch types are not yet supported.');

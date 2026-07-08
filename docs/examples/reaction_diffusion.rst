@@ -22,7 +22,7 @@ form
 
 .. math::
 
-    (I - \Delta t \mathcal{L}_\Gamma) u^{k+1} = u^k + \Delta t \mathcal{N}(u^k)
+    (I - \Delta t \mathcal{L}_\Gamma) u^{k+1} = u^k + \Delta t \mathcal{N}(u^k).
 
 If the operator :math:`\mathcal{L}_\Gamma` is time-independent, then a solver
 for this PDE may be constructed once and reused at each time step with a

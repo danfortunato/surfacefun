@@ -25,14 +25,30 @@ elseif ( isa(f, 'surfacefun') && isa(g, 'surfacefun') )
 elseif ( isa(f, 'surfacefun') )
     % G is not a SURFACEFUN:
     nf = builtin('numel', f);
-    for k = 1:nf
-        f(k).vals = cellfun(@(x) op(x,g), f(k).vals, 'UniformOutput', false);
+    if ( isscalar(g) )
+        for k = 1:nf
+            f(k).vals = cellfun(@(x) op(x,g), f(k).vals, 'UniformOutput', false);
+        end
+    elseif ( all(size(g) == size(f)) )
+        for k = 1:nf
+            f(k).vals = cellfun(@(x) op(x,g(k)), f(k).vals, 'UniformOutput', false);
+        end
+    else
+        error('SURFACEFUN:compose:dims', 'Matrix dimensions must agree.');
     end
 elseif ( isa(g, 'surfacefun') )
     % F is not a SURFACEFUN:
     ng = builtin('numel', g);
-    for k = 1:ng
-        g(k).vals = cellfun(@(x) op(f,x), g(k).vals, 'UniformOutput', false);
+    if ( isscalar(f) )
+        for k = 1:ng
+            g(k).vals = cellfun(@(x) op(f,x), g(k).vals, 'UniformOutput', false);
+        end
+    elseif ( all(size(f) == size(g)) )
+        for k = 1:ng
+            g(k).vals = cellfun(@(x) op(f(k),x), g(k).vals, 'UniformOutput', false);
+        end
+    else
+        error('SURFACEFUN:compose:dims', 'Matrix dimensions must agree.');
     end
     f = g;
 end

@@ -41,6 +41,19 @@ if ( isempty(f) )
     return
 end
 
+% Overload for array-valued SURFACEFUNs.
+if ( size(f, 2) > 1 )
+    if ( reduce )
+        normF = zeros(1, size(f, 2));
+    else
+        normF = zeros(length(f), size(f, 2));
+    end
+    for k = 1:size(f, 2)
+        normF(:,k) = norm(f(:,k), varargin{:});
+    end
+    return
+end
+
 switch ( p )
     case 'fro'
         normF = norm(f, 2);
