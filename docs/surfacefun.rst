@@ -4,6 +4,14 @@ Functions and vector fields
 Once a surface mesh has been constructed, we may define scalar functions and
 vector fields on the surface.
 
+.. note::
+
+   The examples on this page run live in your browser through `numbl
+   <https://numbl.org>`_. Click **▶ Edit & run** beneath any figure to open an
+   editable copy of the complete, self-contained script, tweak it, and re-run
+   it. Nothing is computed until you click; the first run downloads surfacefun
+   (and Chebfun), and later runs reuse the cached copy.
+
 Scalar functions
 ----------------
 
@@ -41,6 +49,27 @@ Let's plot the function:
         :width: 350px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    figure(1);
+    plot(f), hold on, plot(dom), colorbar
+    title('f = cos(6x) y + e^z');
+    </script>
+    </numbl-embed>
+
 Many standard MATLAB arithmetic functions have been overloaded.
 
 .. code-block:: matlab
@@ -55,6 +84,30 @@ Many standard MATLAB arithmetic functions have been overloaded.
         :width: 350px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+    x = surfacefun(@(x, y, z) x, dom);
+
+    g = abs(f + 2*x);
+
+    figure(1);
+    plot(g), colorbar
+    title('g = |f + 2x|');
+    </script>
+    </numbl-embed>
+
 We can also visualize a ``surfacefun`` using a contour plot:
 
 .. code-block:: matlab
@@ -67,6 +120,28 @@ We can also visualize a ``surfacefun`` using a contour plot:
     .. figure:: images/contour.png
         :width: 200px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 8;
+    nref = 0;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    figure(1);
+    contour(f, linewidth=2)
+    axis off
+    title('Contours of f');
+    </script>
+    </numbl-embed>
 
 We may numerically differentiate a function using the built-in ``diff`` or
 ``grad`` routines, which automatically take into account the on-surface metric.
@@ -85,6 +160,30 @@ For example:
         :width: 650px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    [fx, fy, fz] = grad(f);
+
+    figure(1);
+    subplot(131), plot(fx), title('\partial_x f')
+    subplot(132), plot(fy), title('\partial_y f')
+    subplot(133), plot(fz), title('\partial_z f')
+    </script>
+    </numbl-embed>
+
 Higher-order derivatives may be constructed by composing these operations. For
 example, here is the surface Laplacian---or the Laplace--Beltrami
 operator---applied to our function:
@@ -98,6 +197,27 @@ operator---applied to our function:
     .. figure:: images/func_lap.png
         :width: 350px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    figure(1);
+    plot(lap(f)), colorbar
+    title('\Delta_\Gamma f');
+    </script>
+    </numbl-embed>
 
 The definite integral of a function over the surface is given by:
 
@@ -167,6 +287,28 @@ Other norms are implemented as well. The :math:`L^\infty` norm is computed via:
            3.229329881902320
         </pre>
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example (integral, mean, norms)" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    fprintf('integral(f) = %.6f\n', integral(f));     % definite integral over the surface
+    fprintf('mean(f)     = %.6f\n', mean(f));          % integral / surface area
+    fprintf('L2 norm     = %.6f\n', norm(f));          % sqrt(integral of f^2)
+    fprintf('Linf norm   = %.6f\n', norm(f, inf));     % max |f|
+    </script>
+    </numbl-embed>
+
 Vector fields
 -------------
 
@@ -187,6 +329,27 @@ vectors per patch and scale their lengths by 0.2:
     .. figure:: images/vec_normals.png
         :width: 350px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    v = normal(dom);
+
+    figure(1);
+    quiver(v, 0.2, 6)
+    title('Surface normals');
+    </script>
+    </numbl-embed>
 
 The surface gradient of a ``surfacefun`` is a ``surfacefunv``:
 
@@ -219,6 +382,30 @@ The gradient is tangent to the surface, as we can see from a quiver plot:
         :width: 350px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    f = surfacefun(@(x, y, z) cos(6*x) .* y + exp(z), dom);
+
+    figure(1);
+    quiver(grad(f), 0.05, 6)
+    title('Surface gradient of f (tangent to the surface)');
+
+    % Identity: the divergence of the gradient is the Laplacian.
+    fprintf('|| div(grad f) - lap(f) || = %.3e\n', norm(div(grad(f)) - lap(f)));
+    </script>
+    </numbl-embed>
+
 The surface divergence of the surface gradient is equal to the surface
 Laplacian:
 
@@ -249,6 +436,27 @@ via the surface divergence:
         :width: 400px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    v = normal(dom);
+
+    figure(1);
+    plot(div(v)/2), colorbar
+    title('Mean curvature  div(n)/2');
+    </script>
+    </numbl-embed>
+
 We can also take the surface curl of a ``surfacefunv``:
 
 .. code-block:: matlab
@@ -263,3 +471,26 @@ We can also take the surface curl of a ``surfacefunv``:
     .. figure:: images/vec_curl.png
         :width: 350px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    rng(0);
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.blob(p + 1, nref);
+
+    v = surfacefunv(@(x, y, z) cos(2*x), ...
+                    @(x, y, z) sin(4*y), ...
+                    @(x, y, z) sin(3*z), dom);
+
+    figure(1);
+    quiver(curl(v), 0.1, 6)
+    title('Surface curl of a vector field');
+    </script>
+    </numbl-embed>

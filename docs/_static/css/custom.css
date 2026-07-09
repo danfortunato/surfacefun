@@ -35,3 +35,25 @@ a.icon {
     line-height: 1.4;
     color: #888;
 }
+
+/* Interactive numbl examples (<numbl-embed>). Collapsed to a button until the
+   reader clicks it, then expands to an editable, runnable widget. */
+numbl-embed {
+    display: block;
+    margin-top: -16px;
+    margin-bottom: 28px;
+}
+
+numbl-embed iframe {
+    border: 1px solid #e1e4e5;
+    border-radius: 4px;
+}
+
+.numbl-embed-activate:hover {
+    background: #1b5e20 !important;
+}
+
+.numbl-embed-activate:focus-visible {
+    outline: 2px solid #56abe2;
+    outline-offset: 2px;
+}

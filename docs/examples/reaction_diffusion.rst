@@ -87,6 +87,53 @@ shown below.
    :width: 650px
    :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    % Complex Ginzburg-Landau, integrated with a semi-implicit (backward-Euler)
+    % scheme. The diffusion operator is time-independent, so one surfaceop
+    % factorization is reused at every step. Sphere + short run to stay quick.
+    dt = 0.1;
+    nsteps = 60;
+    alpha = 0;
+    beta = 1.5;
+    delta = 5e-3;
+
+    N = @(u) u - (1 + beta*1i)*u .* (abs(u).^2);
+
+    p = 8;
+    nref = 1;
+    dom = surfacemesh.sphere(p + 1, nref);
+    pdo = struct('lap', -dt*delta*(1 + alpha*1i), 'c', 1);
+    L = surfaceop(dom, pdo);
+    L.build();
+
+    rng(1);
+    f = randnfun3(0.5, boundingbox(dom));
+    u = surfacefun(@(x, y, z) f(x, y, z), dom);
+
+    subplot(1, 2, 1)
+    plot(real(u)), colorbar
+    title('Initial condition');
+
+    for k = 1:nsteps
+        L.rhs = u + dt*N(u);
+        u = L.solve();
+    end
+
+    subplot(1, 2, 2)
+    plot(real(u)), colorbar
+    title(sprintf('Re(u) after %d steps', nsteps));
+
+    fprintf('done: %d steps, ||Re(u)|| = %.4f\n', nsteps, norm(real(u)));
+    </script>
+    </numbl-embed>
+
 Turing system
 -------------
 

@@ -43,6 +43,24 @@ and plot them:
         :width: 200px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    n = 16;
+    [u, v] = chebpts2(n);
+
+    figure(1);
+    plot(u, v, 'ko', markerfacecolor='k')
+    axis equal off
+    title('Tensor-product Chebyshev nodes');
+    </script>
+    </numbl-embed>
+
 Now let's create a surface mesh with a single patch using these nodes. The
 constructor takes as input the coordinates of the nodes on each patch as a
 MATLAB cell array whose length is equal to the number of patches in the mesh:
@@ -60,6 +78,30 @@ MATLAB cell array whose length is equal to the number of patches in the mesh:
     .. figure:: images/single_element.png
         :width: 400px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    n = 16;
+    [u, v] = chebpts2(n);
+
+    x = u;
+    y = v;
+    z = cos(u) .* cos(v);
+    dom = surfacemesh({x}, {y}, {z});
+
+    figure(1);
+    plot(dom), camlight
+    title('Single high-order patch');
+
+    fprintf('number of patches: %d\n', length(dom));
+    </script>
+    </numbl-embed>
 
 We can verify that the mesh has a single element by asking for the length of the
 mesh:
@@ -119,6 +161,49 @@ and map them to the graph of a given function.
         :width: 300px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    n = 16;
+    [u, v] = chebpts2(n);
+
+    mx = 4;
+    my = 4;
+    x = cell(mx*my, 1);
+    y = cell(mx*my, 1);
+    z = cell(mx*my, 1);
+
+    % A random smooth function sets the surface height.
+    rng(0);
+    f = 0.2*randnfun2;
+
+    k = 1;
+    for i = 1:mx
+        for j = 1:my
+            uk = (u+1)/mx + 2/mx*(i-1) - 1;
+            vk = (v+1)/my + 2/my*(j-1) - 1;
+            x{k} = uk;
+            y{k} = f(uk, vk);
+            z{k} = vk;
+            k = k + 1;
+        end
+    end
+
+    dom = surfacemesh(x, y, z);
+
+    figure(1);
+    plot(dom), camlight
+    title('4 x 4 patch grid');
+
+    fprintf('number of patches: %d\n', length(dom));
+    </script>
+    </numbl-embed>
+
 The mesh now has multiple patches:
 
 .. code-block:: matlab
@@ -156,6 +241,24 @@ which consists of a cube mesh that has been inflated to live on the sphere:
         :width: 300px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.sphere(p + 1, nref);
+
+    figure(1);
+    plot(dom), camlight
+    title('Cubed sphere');
+    </script>
+    </numbl-embed>
+
 We can deform this mesh in various ways. For instance, we can create a blob-like
 surface mesh by radially perturbed the nodes of the spherical mesh according to
 a random smooth function. This is encapsulated in the ``surfacemesh.blob``
@@ -174,6 +277,25 @@ routine:
         :width: 300px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nref = 2;
+    rng(0);
+    dom = surfacemesh.blob(p + 1, nref);
+
+    figure(1);
+    plot(dom), camlight
+    title('Random blob');
+    </script>
+    </numbl-embed>
+
 If we keep calling this function, we'll generate new surfaces due to the
 randomness of the algorithm:
 
@@ -191,6 +313,27 @@ randomness of the algorithm:
         :width: 650px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nref = 2;
+
+    % Each call advances the RNG, so the three blobs differ.
+    rng(0);
+    for k = 1:3
+        dom = surfacemesh.blob(p + 1, nref);
+        subplot(1, 3, k)
+        plot(dom), camlight
+    end
+    </script>
+    </numbl-embed>
+
 Surface meshes of any genus are supported. Here is a smoothly deformed torus:
 
 .. code-block:: matlab
@@ -204,6 +347,25 @@ Surface meshes of any genus are supported. Here is a smoothly deformed torus:
     .. figure:: images/torus.png
         :width: 400px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nu = 8;
+    nv = 24;
+    dom = surfacemesh.torus(p + 1, nu, nv);
+
+    figure(1);
+    plot(dom), camlight
+    title('Torus');
+    </script>
+    </numbl-embed>
 
 The mesh does not even have to be smooth between patches...
 
@@ -219,6 +381,25 @@ The mesh does not even have to be smooth between patches...
         :width: 400px
         :align: center
 
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nu = 4;
+    nv = 32;
+    dom = surfacemesh.twisted_torus(p + 1, nu, nv);
+
+    figure(1);
+    plot(dom), camlight
+    title('Twisted torus');
+    </script>
+    </numbl-embed>
+
 ...or even orientable!
 
 .. code-block:: matlab
@@ -232,6 +413,25 @@ The mesh does not even have to be smooth between patches...
     .. figure:: images/mobius.png
         :width: 400px
         :align: center
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nu = 30;
+    nv = 7;
+    dom = surfacemesh.mobius(p + 1, nu, nv);
+
+    figure(1);
+    plot(dom), camlight
+    title('Mobius band');
+    </script>
+    </numbl-embed>
 
 Importing an existing mesh
 --------------------------
@@ -274,6 +474,24 @@ Visualizing a mesh
         :width: 300px
         :align: center
 
+  .. raw:: html
+
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+      <iframe width="100%" height="560" frameborder="0"></iframe>
+      <script type="text/plain" class="numbl-preamble">
+      mip load --install flatironinstitute/flatironinstitute/surfacefun
+      </script>
+      <script type="text/plain" class="numbl-script">
+      p = 16;
+      nref = 1;
+      dom = surfacemesh.sphere(p + 1, nref);
+
+      figure(1);
+      plot(dom, surface='off')
+      title('Wireframe only');
+      </script>
+      </numbl-embed>
+
 - Make a mesh plot of the high-order nodes on each patch:
 
   .. code-block:: matlab
@@ -285,6 +503,24 @@ Visualizing a mesh
     .. figure:: images/mesh.png
         :width: 300px
         :align: center
+
+  .. raw:: html
+
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+      <iframe width="100%" height="560" frameborder="0"></iframe>
+      <script type="text/plain" class="numbl-preamble">
+      mip load --install flatironinstitute/flatironinstitute/surfacefun
+      </script>
+      <script type="text/plain" class="numbl-script">
+      p = 16;
+      nref = 1;
+      dom = surfacemesh.sphere(p + 1, nref);
+
+      figure(1);
+      mesh(dom)
+      title('High-order nodes');
+      </script>
+      </numbl-embed>
 
 Querying a mesh
 ~~~~~~~~~~~~~~~
@@ -386,6 +622,28 @@ Querying a mesh
             -1     1    -1     1    -1     1
         </pre>
 
+
+.. raw:: html
+
+    <numbl-embed lazy label="▶ Edit &amp; run this example (mesh queries)" preparing-label="Installing surfacefun…">
+    <iframe width="100%" height="560" frameborder="0"></iframe>
+    <script type="text/plain" class="numbl-preamble">
+    mip load --install flatironinstitute/flatironinstitute/surfacefun
+    </script>
+    <script type="text/plain" class="numbl-script">
+    p = 16;
+    nref = 2;
+    dom = surfacemesh.sphere(p + 1, nref);
+
+    fprintf('patches (length):   %d\n', length(dom));
+    fprintf('order per patch:    %d\n', order(dom));
+    fprintf('degrees of freedom: %d\n', numel(dom));
+    fprintf('volume - 4/3 pi:    %.2e\n', volume(dom) - 4/3*pi);
+    fprintf('area - 4 pi:        %.2e\n', surfacearea(dom) - 4*pi);
+    fprintf('bounding box:       [%g %g %g %g %g %g]\n', boundingbox(dom));
+    </script>
+    </numbl-embed>
+
 Modifying a mesh
 ~~~~~~~~~~~~~~~~
 
@@ -411,6 +669,26 @@ patch ("p-refinement") or by the changing the number of patches
         :width: 300px
         :align: center
 
+  .. raw:: html
+
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+      <iframe width="100%" height="560" frameborder="0"></iframe>
+      <script type="text/plain" class="numbl-preamble">
+      mip load --install flatironinstitute/flatironinstitute/surfacefun
+      </script>
+      <script type="text/plain" class="numbl-script">
+      p = 16;
+      nref = 2;
+      dom = surfacemesh.sphere(p + 1, nref);
+
+      dom2 = resample(dom, 3);
+
+      figure(1);
+      plot(dom2)
+      title(sprintf('Resampled to order %d', order(dom2)));
+      </script>
+      </numbl-embed>
+
 - Now refine the mesh by dividing each patch into four:
 
   .. code-block:: matlab
@@ -423,3 +701,24 @@ patch ("p-refinement") or by the changing the number of patches
     .. figure:: images/refine.png
         :width: 300px
         :align: center
+
+  .. raw:: html
+
+      <numbl-embed lazy label="▶ Edit &amp; run this example" preparing-label="Installing surfacefun…">
+      <iframe width="100%" height="560" frameborder="0"></iframe>
+      <script type="text/plain" class="numbl-preamble">
+      mip load --install flatironinstitute/flatironinstitute/surfacefun
+      </script>
+      <script type="text/plain" class="numbl-script">
+      p = 16;
+      nref = 2;
+      dom = surfacemesh.sphere(p + 1, nref);
+
+      dom2 = resample(dom, 3);
+      dom3 = refine(dom2);
+
+      figure(1);
+      plot(dom3)
+      title(sprintf('Refined: %d patches', length(dom3)));
+      </script>
+      </numbl-embed>
