@@ -210,8 +210,12 @@ for k = 1:numPatches
         RHS = [rhs(:,k); zeros(numBdyPts, 1)];
 
         LL = [ A(ipde,:) ; bc ];
-        dA = matlab.internal.decomposition.DenseLU(LL);
-        Ainv = @(u) solve(dA, u, false);
+        % Equilibrate rows: the PDE rows are much larger than the boundary
+        % rows, and without scaling the LU loses accuracy in the boundary
+        % values. Ainv applies the same scaling to any right-hand side.
+        rs = 1 ./ max(abs(LL), [], 2);
+        dA = matlab.internal.decomposition.DenseLU(rs .* LL);
+        Ainv = @(u) solve(dA, rs .* u, false);
         S = Ainv([BC RHS]);
 
         ItI_scl = ItI_scl0;
